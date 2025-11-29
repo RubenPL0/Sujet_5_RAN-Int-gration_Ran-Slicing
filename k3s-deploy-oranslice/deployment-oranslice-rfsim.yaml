@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oranslice-gnb
+  namespace: nexslice
+  labels:
+    app: oranslice-gnb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oranslice-gnb
+  template:
+    metadata:
+      labels:
+        app: oranslice-gnb
+    spec:
+      containers:
+      - name: oranslice-gnb
+        image: docker.io/library/oranslice-gnb:latest
+        imagePullPolicy: Never
+        securityContext:
+          privileged: true
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          echo "=== Démarrage ORANSlice gNB en mode RFsimulator SERVEUR ==="
+          cd /oai-ran/cmake_targets/ran_build/build
+          ./nr-softmodem -O /oai-ran/etc/gnb.conf \
+            --rfsim \
+            --sa \
+            -E \
+            --rfsimulator.serveraddr server \
+            --gNBs.[0].min_rxtxtime 6 \
+            2>&1
+        ports:
+        - containerPort: 38412
+          protocol: SCTP
+        - containerPort: 2152
+          protocol: UDP
+        - containerPort: 4043
+          protocol: TCP
+          name: rfsim
+        volumeMounts:
+        - name: gnb-config
+          mountPath: /oai-ran/etc/gnb.conf
+          subPath: gnb-k3s.yaml
+        - name: gnb-config
+          mountPath: /oai-ran/etc/rrmPolicy.json
+          subPath: rrmPolicy.json
+      volumes:
+      - name: gnb-config
+        configMap:
+          name: oranslice-gnb-config

@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ue-embb-oai-config
+  namespace: nexslice
+data:
+  ue.conf: |
+    uicc0 = {
+      imsi = "208950000000041";
+      key = "0C0A34601D4F07677303652C0462535B";
+      opc = "63BFA50EE6523365FF14C1F45F88737D";
+      amf = "8000";
+      dnn = "oai";
+      nssai_sst = 1;
+      nssai_sd = 0xFFFFFF;
+    };
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ue-embb-oai
+  namespace: nexslice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ue-embb-oai
+  template:
+    metadata:
+      labels:
+        app: ue-embb-oai
+    spec:
+      containers:
+      - name: oai-ue
+        image: docker.io/oaisoftwarealliance/oai-nr-ue:2025.w18
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          echo "=== Démarrage UE eMBB (SST=1) ==="
+          sleep 30
+          /opt/oai-nr-ue/bin/nr-uesoftmodem \
+            -O /opt/oai-nr-ue/etc/ue.conf \
+            --rfsim \
+            --rfsimulator.serveraddr 10.42.0.4 \
+            -r 106 \
+            --numerology 1 \
+            --band 78 \
+            -C 3619200000 \
+            -E \
+            2>&1
+        volumeMounts:
+        - name: config
+          mountPath: /opt/oai-nr-ue/etc/ue.conf
+          subPath: ue.conf
+      volumes:
+      - name: config
+        configMap:
+          name: ue-embb-oai-config
