@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: oranslice-gnb
+  namespace: nexslice
+spec:
+  selector:
+    app: oranslice-gnb
+  ports:
+    - name: rfsim
+      protocol: TCP
+      port: 4043
+      targetPort: 4043
+  type: ClusterIP

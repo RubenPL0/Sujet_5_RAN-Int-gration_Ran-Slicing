@@ -1,0 +1,149 @@
+# =============================================================================
+# OAI NR-UE3 - Complete values.yaml
+# Fichier: 5g_ran/oai-nr-ue3/values.yaml
+# =============================================================================
+
+kubernetesType: Vanilla
+
+nfimage:
+  registry: docker.io
+  repository: oaisoftwarealliance/oai-nr-ue
+  tag: develop
+  pullPolicy: IfNotPresent
+
+tcpdumpimage:
+  registry: docker.io
+  repository: corfr/tcpdump
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# =============================================================================
+# UE3 Configuration - Slice 3 (mMTC - SST=3, SD=0x000003)
+# =============================================================================
+
+config:
+  timeZone: "Europe/Paris"
+  rfSimServer: "oai-du"
+  
+  # UE Identity (UNIQUE pour UE3)
+  fullImsi: "001010000000003"
+  fullKey: "fec86ba6eb707ed08905757b1bb44b8f"
+  opc: "C42449363BBAD02B66D16BC975D77CC1"
+  
+  # Network Slice 3 - mMTC
+  dnn: "slice3"
+  nssaiSst: "3"
+  nssaiSd: "0x000003"
+  
+  # RF Configuration
+  useAdditionalOptions: "--sa --rfsim -r 106 --numerology 1 -C 3619200000 --ssb 516"
+
+# =============================================================================
+# Container Configuration
+# =============================================================================
+
+start:
+  nrue: true
+  tcpdump: false
+
+includeTcpDumpContainer: false
+
+# =============================================================================
+# Security Context
+# =============================================================================
+
+securityContext:
+  privileged: true
+
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+
+# =============================================================================
+# Service Account
+# =============================================================================
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "oai-nr-ue3-sa"
+
+# =============================================================================
+# RBAC
+# =============================================================================
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+# =============================================================================
+# Resources
+# =============================================================================
+
+resources:
+  define: true
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+  requests:
+    cpu: "1"
+    memory: "2Gi"
+
+# =============================================================================
+# Health Checks
+# =============================================================================
+
+readinessProbe: true
+livenessProbe: false
+
+# =============================================================================
+# Node Selection
+# =============================================================================
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# =============================================================================
+# Pod Labels and Annotations
+# =============================================================================
+
+podLabels: {}
+
+podAnnotations: {}
+
+# =============================================================================
+# Network Configuration
+# =============================================================================
+
+multus:
+  create: false
+  # Si vous utilisez Multus pour des interfaces réseau supplémentaires
+  # defaultNetworks: []
+
+# =============================================================================
+# Persistence (si nécessaire)
+# =============================================================================
+
+persistence:
+  enabled: false
+  # storageClass: ""
+  # accessMode: ReadWriteOnce
+  # size: 1Gi
+
+# =============================================================================
+# Additional Environment Variables (optionnel)
+# =============================================================================
+
+extraEnvVars: []
+# - name: EXAMPLE_VAR
+#   value: "example_value"
+
+extraEnvVarsCM: ""
+extraEnvVarsSecret: ""

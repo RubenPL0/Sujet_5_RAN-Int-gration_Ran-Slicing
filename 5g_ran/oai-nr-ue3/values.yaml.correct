@@ -1,0 +1,75 @@
+kubernetesType: Vanilla
+
+nfimage:
+  registry: docker.io
+  repository: oaisoftwarealliance/oai-nr-ue
+  tag: develop
+  pullPolicy: IfNotPresent
+
+tcpdumpimage:
+  registry: docker.io
+  repository: corfr/tcpdump
+  tag: latest
+  pullPolicy: IfNotPresent
+
+config:
+  timeZone: "Europe/Paris"
+  rfSimServer: "oai-du-svc"
+  
+  # UE3 Identity
+  fullImsi: "001010000000003"
+  fullKey: "fec86ba6eb707ed08905757b1bb44b8f"
+  opc: "C42449363BBAD02B66D16BC975D77CC1"
+  
+  # Slice 3 (mMTC)
+  dnn: "slice3"
+  nssaiSst: "3"
+  nssaiSd: "0x000003"
+  
+  useAdditionalOptions: "--sa --rfsim -r 106 --numerology 1 -C 3619200000 --ssb 516"
+
+start:
+  nrue: true
+  tcpdump: false
+
+includeTcpDumpContainer: false
+
+securityContext:
+  privileged: true
+
+podSecurityContext:
+  runAsUser: 0
+  runAsGroup: 0
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "oai-nr-ue3-sa"
+
+rbac:
+  create: true
+
+resources:
+  define: true
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+  requests:
+    cpu: "1"
+    memory: "2Gi"
+
+readinessProbe: true
+livenessProbe: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podLabels: {}
+podAnnotations: {}
+
+multus:
+  create: false
+
+persistence:
+  enabled: false

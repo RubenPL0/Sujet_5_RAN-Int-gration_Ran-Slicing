@@ -1,0 +1,8 @@
+apiVersion: v2
+name: oai-gnb-slicing
+description: OAI gNB with Static RAN Slicing Support
+type: application
+version: 1.0.0
+appVersion: "v2.1.0"
+
+dependencies: []

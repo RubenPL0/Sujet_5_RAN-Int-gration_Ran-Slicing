@@ -1,0 +1,97 @@
+# NexSlice - OAI gNB with RAN Slicing
+# Values for static PRB allocation per slice
+
+image:
+  repository: oaisoftwarealliance/oai-gnb
+  tag: "v2.1.0"
+  pullPolicy: IfNotPresent
+
+# RAN Slicing Configuration
+ranSlicing:
+  enabled: true
+  mode: "static"
+  policyFile: /opt/oai/etc/rrmPolicy.json
+  
+  # Les 3 slices configurées
+  slices:
+    - sst: 1
+      sd: "0x000001"
+      label: "eMBB"
+      minPRB: 42
+      maxPRB: 106
+      weight: 4
+    - sst: 1
+      sd: "0x000002"
+      label: "URLLC"
+      minPRB: 32
+      maxPRB: 85
+      weight: 3
+    - sst: 1
+      sd: "0x000003"
+      label: "mMTC"
+      minPRB: 11
+      maxPRB: 53
+      weight: 1
+
+# Configuration réseau
+config:
+  mcc: "001"
+  mnc: "01"
+  tac: "1"
+  gnbId: "0xe00"
+  gnbName: "gNB-NexSlice-Slice-Aware"
+  
+  # AMF connection
+  amf:
+    host: "oai-amf-svc"
+    port: 38412
+    ipAddress: "192.168.70.132"
+  
+  # Network interfaces
+  network:
+    n2Interface: "net1"  # AMF
+    n3Interface: "net1"  # UPF
+    localAddress: "192.168.70.129"
+
+# Physical layer
+phy:
+  band: 78
+  carrierBandwidth: 106
+  subcarrierSpacing: 30
+  absoluteFrequencyPointA: 640032
+
+# Resources
+resources:
+  limits:
+    cpu: "2000m"
+    memory: "4Gi"
+  requests:
+    cpu: "1000m"
+    memory: "2Gi"
+
+# Multus pour interfaces réseau supplémentaires
+multus:
+  enabled: true
+  networks:
+    - name: oai-gnb-n2
+      interface: net1
+      ips: ["192.168.70.129/24"]
+
+# Service
+service:
+  type: ClusterIP
+  ports:
+    ngap: 38412
+    gtp: 2152
+
+# Persistence pour logs et policies
+persistence:
+  enabled: true
+  storageClass: "local-path"
+  size: 1Gi
+  mountPath: /opt/oai/logs
+
+# ConfigMaps
+configMaps:
+  gnbConfig: gnb-slicing-config
+  ranPolicy: ran-slicing-policy

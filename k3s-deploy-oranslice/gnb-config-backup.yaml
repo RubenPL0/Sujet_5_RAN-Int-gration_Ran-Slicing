@@ -1,0 +1,20 @@
+apiVersion: v1
+data:
+  gnb-k3s.yaml: "Active_gNBs = ( \"gNB-ORANSlice\");\n\ngNBs = (\n  {\n    //////////
+    Identification parameters:\n    gNB_ID = 0x1e00;\n    gNB_name = \"gNB-ORANSlice\";\n
+    \   \n    // Tracking area code\n    tracking_area_code = 1;\n    plmn_list =
+    ({\n      mcc = 001;\n      mnc = 01;\n      mnc_length = 2;\n      snssaiList
+    = (\n        {\n          sst = 1;\n          sd  = 0x000001; # eMBB slice\n        },\n
+    \       {\n          sst = 1;\n          sd  = 0x000002; # URLLC slice\n        },\n
+    \       {\n          sst = 1;\n          sd  = 0x000003; # mMTC slice\n        }\n
+    \     );\n    });\n    \n    nr_cellid = 12345678L;\n"
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"gnb-k3s.yaml":"Active_gNBs = ( \"gNB-ORANSlice\");\n\ngNBs = (\n  {\n    ////////// Identification parameters:\n    gNB_ID = 0x1e00;\n    gNB_name = \"gNB-ORANSlice\";\n    \n    // Tracking area code\n    tracking_area_code = 1;\n    plmn_list = ({\n      mcc = 001;\n      mnc = 01;\n      mnc_length = 2;\n      snssaiList = (\n        {\n          sst = 1;\n          sd  = 0x000001; # eMBB slice\n        },\n        {\n          sst = 1;\n          sd  = 0x000002; # URLLC slice\n        },\n        {\n          sst = 1;\n          sd  = 0x000003; # mMTC slice\n        }\n      );\n    });\n    \n    nr_cellid = 12345678L;\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"gnb-config","namespace":"nexslice"}}
+  creationTimestamp: "2025-11-29T14:06:12Z"
+  name: gnb-config
+  namespace: nexslice
+  resourceVersion: "40977"
+  uid: 7d44dd5d-fb77-441b-936e-4a8ae15a152c

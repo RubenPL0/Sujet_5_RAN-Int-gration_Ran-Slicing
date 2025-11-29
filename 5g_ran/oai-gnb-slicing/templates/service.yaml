@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "oai-gnb-slicing.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: oai-gnb-slicing
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - name: ngap
+    port: {{ .Values.service.ports.ngap }}
+    targetPort: ngap
+    protocol: SCTP
+  - name: gtp
+    port: {{ .Values.service.ports.gtp }}
+    targetPort: gtp
+    protocol: UDP
+  selector:
+    app: oai-gnb-slicing
