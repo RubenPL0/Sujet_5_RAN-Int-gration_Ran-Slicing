@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ue-embb-config
+  name: ue-embb-oai-config
   namespace: nexslice
 data:
   ue.conf: |
@@ -23,9 +23,6 @@ kind: Deployment
 metadata:
   name: ue-embb-oai
   namespace: nexslice
-  labels:
-    app: ue-embb-oai
-    slice: embb
 spec:
   replicas: 1
   selector:
@@ -35,7 +32,6 @@ spec:
     metadata:
       labels:
         app: ue-embb-oai
-        slice: embb
     spec:
       containers:
       - name: oai-ue
@@ -46,43 +42,20 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
-          echo "=== UE eMBB (SST=1, IMSI=041) ==="
-          echo "Attente du gNB (30s)..."
+          echo "=== UE eMBB (SST=1) ===" 
           sleep 30
-          
-          GNB_ADDR="oranslice-gnb"
-          echo "Connexion au gNB: ${GNB_ADDR}:4043"
-          
-          /opt/oai-nr-ue/bin/nr-uesoftmodem \
-            -O /opt/oai-nr-ue/etc/ue.conf \
-            --rfsim \
-            --rfsimulator.serveraddr ${GNB_ADDR} \
-            -r 106 \
-            --numerology 1 \
-            --band 78 \
-            -C 3619200000 \
-            -E \
-            2>&1
-          
-          # Garder le conteneur vivant si l'UE crash
-          echo "UE terminé, maintien du conteneur..."
-          sleep infinity
+          /opt/oai-nr-ue/bin/nr-uesoftmodem -O /opt/oai-nr-ue/etc/ue.conf             --rfsim --rfsimulator.serveraddr 10.42.0.13             -r 106 --numerology 1 --band 78 -C 3619200000 -E 2>&1
+        env:
+        - name: NEW_IP
+          value: "10.42.0.13"
         volumeMounts:
         - name: config
           mountPath: /opt/oai-nr-ue/etc/ue.conf
           subPath: ue.conf
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "1"
       volumes:
       - name: config
         configMap:
-          name: ue-embb-config
-
+          name: ue-embb-oai-config
 ---
 # ============================================
 # UE 2 - URLLC (SST=2)
@@ -90,7 +63,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ue-urllc-config
+  name: ue-urllc-oai-config
   namespace: nexslice
 data:
   ue.conf: |
@@ -109,9 +82,6 @@ kind: Deployment
 metadata:
   name: ue-urllc-oai
   namespace: nexslice
-  labels:
-    app: ue-urllc-oai
-    slice: urllc
 spec:
   replicas: 1
   selector:
@@ -121,7 +91,6 @@ spec:
     metadata:
       labels:
         app: ue-urllc-oai
-        slice: urllc
     spec:
       containers:
       - name: oai-ue
@@ -132,42 +101,20 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
-          echo "=== UE URLLC (SST=2, IMSI=042) ==="
-          echo "Attente du gNB (45s)..."
+          echo "=== UE URLLC (SST=2) ==="
           sleep 45
-          
-          GNB_ADDR="oranslice-gnb"
-          echo "Connexion au gNB: ${GNB_ADDR}:4043"
-          
-          /opt/oai-nr-ue/bin/nr-uesoftmodem \
-            -O /opt/oai-nr-ue/etc/ue.conf \
-            --rfsim \
-            --rfsimulator.serveraddr ${GNB_ADDR} \
-            -r 106 \
-            --numerology 1 \
-            --band 78 \
-            -C 3619200000 \
-            -E \
-            2>&1
-          
-          echo "UE terminé, maintien du conteneur..."
-          sleep infinity
+          /opt/oai-nr-ue/bin/nr-uesoftmodem -O /opt/oai-nr-ue/etc/ue.conf             --rfsim --rfsimulator.serveraddr 10.42.0.13             -r 106 --numerology 1 --band 78 -C 3619200000 -E 2>&1
+        env:
+        - name: NEW_IP
+          value: "10.42.0.13"
         volumeMounts:
         - name: config
           mountPath: /opt/oai-nr-ue/etc/ue.conf
           subPath: ue.conf
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "1"
       volumes:
       - name: config
         configMap:
-          name: ue-urllc-config
-
+          name: ue-urllc-oai-config
 ---
 # ============================================
 # UE 3 - mMTC (SST=3)
@@ -175,7 +122,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ue-mmtc-config
+  name: ue-mmtc-oai-config
   namespace: nexslice
 data:
   ue.conf: |
@@ -194,9 +141,6 @@ kind: Deployment
 metadata:
   name: ue-mmtc-oai
   namespace: nexslice
-  labels:
-    app: ue-mmtc-oai
-    slice: mmtc
 spec:
   replicas: 1
   selector:
@@ -206,7 +150,6 @@ spec:
     metadata:
       labels:
         app: ue-mmtc-oai
-        slice: mmtc
     spec:
       containers:
       - name: oai-ue
@@ -217,38 +160,17 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
-          echo "=== UE mMTC (SST=3, IMSI=043) ==="
-          echo "Attente du gNB (60s)..."
+          echo "=== UE mMTC (SST=3) ==="
           sleep 60
-          
-          GNB_ADDR="oranslice-gnb"
-          echo "Connexion au gNB: ${GNB_ADDR}:4043"
-          
-          /opt/oai-nr-ue/bin/nr-uesoftmodem \
-            -O /opt/oai-nr-ue/etc/ue.conf \
-            --rfsim \
-            --rfsimulator.serveraddr ${GNB_ADDR} \
-            -r 106 \
-            --numerology 1 \
-            --band 78 \
-            -C 3619200000 \
-            -E \
-            2>&1
-          
-          echo "UE terminé, maintien du conteneur..."
-          sleep infinity
+          /opt/oai-nr-ue/bin/nr-uesoftmodem -O /opt/oai-nr-ue/etc/ue.conf             --rfsim --rfsimulator.serveraddr 10.42.0.13             -r 106 --numerology 1 --band 78 -C 3619200000 -E 2>&1
+        env:
+        - name: NEW_IP
+          value: "10.42.0.13"
         volumeMounts:
         - name: config
           mountPath: /opt/oai-nr-ue/etc/ue.conf
           subPath: ue.conf
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "1"
       volumes:
       - name: config
         configMap:
-          name: ue-mmtc-config
+          name: ue-mmtc-oai-config

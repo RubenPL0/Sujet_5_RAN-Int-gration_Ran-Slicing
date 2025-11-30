@@ -24,16 +24,8 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
-          echo "=== Démarrage ORANSlice gNB ==="
-          echo "Config: /oai-ran/etc/gnb.conf"
-          echo "RRM Policy: /oai-ran/etc/rrmPolicy.json"
-          
-          echo "=== Contenu rrmPolicy.json ==="
-          cat /oai-ran/etc/rrmPolicy.json
-          echo ""
-          
+          echo "=== Démarrage ORANSlice gNB en mode RFsimulator SERVEUR ==="
           cd /oai-ran/cmake_targets/ran_build/build
-          
           ./nr-softmodem -O /oai-ran/etc/gnb.conf \
             --rfsim \
             --sa \
@@ -44,27 +36,18 @@ spec:
         ports:
         - containerPort: 38412
           protocol: SCTP
-          name: ngap
         - containerPort: 2152
           protocol: UDP
-          name: gtp
         - containerPort: 4043
           protocol: TCP
           name: rfsim
         volumeMounts:
         - name: gnb-config
           mountPath: /oai-ran/etc/gnb.conf
-          subPath: gnb.conf
+          subPath: gnb-k3s.yaml
         - name: gnb-config
           mountPath: /oai-ran/etc/rrmPolicy.json
           subPath: rrmPolicy.json
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: "1"
-          limits:
-            memory: "4Gi"
-            cpu: "2"
       volumes:
       - name: gnb-config
         configMap:
