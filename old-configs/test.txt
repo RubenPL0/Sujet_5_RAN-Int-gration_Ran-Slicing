@@ -7689,10 +7689,22 @@
 ├── SLICING_STATUS.md
 ├── atat.sh
 ├── atat.txt
+├── backup-oranslice
+│   ├── configmap-oai-amf-backup.yaml
+│   ├── configmap-oranslice-gnb.yaml
+│   ├── deployment-oranslice-gnb.yaml
+│   ├── deployment-ue-embb.yaml
+│   ├── deployment-ue-mmtc.yaml
+│   ├── deployment-ue-urllc.yaml
+│   └── service-oranslice-gnb.yaml
 ├── check_oranslice.sh
 ├── check_ues_oranslice.sh
 ├── connect_gnb_to_core.sh
+├── demo-ran-slicing.sh
 ├── deploy_oranslice_complete.sh
+├── docs
+│   ├── ETAT-DE-LART-RAN-SLICING.md
+│   └── ORANSLICE-INTEGRATION.md
 ├── fig
 │   ├── 100ues.png
 │   ├── 100ues_test.png
@@ -7709,17 +7721,35 @@
 │   ├── ueransim2.png
 │   ├── ueransim3.png
 │   └── ui.png
+├── gnb-config.yaml
+├── gnb-k3s.yaml
 ├── install.sh
 ├── k3s-deploy-oranslice
+│   ├── configmap-gnb-config.yaml
+│   ├── configmap-gnb-current.yaml
 │   ├── configmap-gnb-fixed-sd.yaml
 │   ├── configmap-gnb-k3s-complete.yaml
 │   ├── configmap-gnb-k3s.yaml.broken
+│   ├── configmap-gnb-rfsim-fixed.yaml
+│   ├── configmap-gnb-rfsim.yaml
+│   ├── configmap-gnb-working.yaml
 │   ├── configmap-rrmpolicy.yaml
+│   ├── configmap-to-edit.yaml
 │   ├── configmap-ues-oranslice.yaml
 │   ├── deployment-oranslice-gnb.yaml
+│   ├── deployment-oranslice-rfsim.yaml
 │   ├── deployment-ues-oranslice.yaml
+│   ├── gnb-backup-usrp.conf
 │   ├── gnb-config-backup.yaml
-│   └── service-oranslice-gnb.yaml
+│   ├── service-oranslice-gnb.yaml
+│   ├── service-oranslice.yaml
+│   ├── ue-oai-rfsim-fixed.yaml
+│   ├── ue-oai-rfsim.yaml
+│   ├── ues-3slices-dns.yaml
+│   ├── ues-3slices-rfsim.yaml
+│   ├── ues-3slices-update.yaml
+│   ├── ues-oai-ranslicing.yaml
+│   └── ues-oai-v2.yaml
 ├── last.sh
 ├── metricserver.yaml
 ├── monitoring
@@ -8257,14 +8287,17 @@
 │       └── patch-oai-scheduler.sh
 ├── register.sh
 ├── regle.sh
+├── scripts
+│   └── validate-oranslice.sh
 ├── stop_gnb_connection.sh
 ├── test.txt
-└── tests
-    ├── TEST.sh
-    ├── TEST_iperf3.sh
-    ├── cleanup_iperf3.sh
-    ├── iperf.sh
-    ├── iperf3_results.txt
-    └── ping.sh
+├── tests
+│   ├── TEST.sh
+│   ├── TEST_iperf3.sh
+│   ├── cleanup_iperf3.sh
+│   ├── iperf.sh
+│   ├── iperf3_results.txt
+│   └── ping.sh
+└── ue-embb.yaml
 
-775 directories, 7493 files
+778 directories, 7523 files
