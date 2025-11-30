@@ -1,0 +1,50 @@
+apiVersion: v1
+data:
+  config.yaml: "############# Common configuration\n\n# Log level for all the NFs\nlog_level:\n
+    \ general: info\n\n# If you enable registration, the other NFs will use the NRF
+    discovery mechanism\nregister_nf:\n  general: yes\n\nhttp_version: 2\ncurl_timeout:
+    6000 #milliseconds can be changed if the network have issues\n\n## general single_nssai
+    configuration\n## Defines YAML anchors, which are reused in the config file\n\n##############
+    SBI Interfaces\n### Each NF takes its local SBI interfaces and remote interfaces
+    from here, unless it gets them using NRF discovery mechanisms\nnfs:\n  amf:\n
+    \   host: oai-amf\n    sbi:\n      port: 80\n      api_version: v1\n      interface_name:
+    eth0\n    n2:\n      interface_name: eth0\n      port: 38412\n  lmf:\n    host:
+    oai-lmf\n    sbi:\n      port: 80\n      api_version: v1\n      interface_name:
+    eth0\n  udm:\n    host: oai-udm\n    sbi:\n      port: 80\n      api_version:
+    v1\n      interface_name: eth0\n  udr:\n    host: oai-udr\n    sbi:\n      port:
+    80\n      api_version: v1\n      interface_name: eth0\n  ausf:\n    host: oai-ausf\n
+    \   sbi:\n      port: 80\n      api_version: v1\n      interface_name: eth0\n
+    \ nssf:\n    host: oai-nssf\n    sbi:\n      port: 80\n      api_version: v1\n
+    \     interface_name: eth0\n#### Common for UDR and AMF\ndatabase:\n  host: mysql\n
+    \ user: test\n  type: mysql\n  password: test\n  database_name: oai_db\n  generate_random:
+    true\n  connection_timeout: 300 # seconds\n\n############## NF-specific configuration\namf:\n
+    \ amf_name: \"OAI-AMF\"\n  # This really depends on if we want to keep the \"mini\"
+    version or not\n  support_features_options:\n    enable_simple_scenario: no #
+    \"no\" by default with the normal deployment scenarios with AMF/SMF/UPF/AUSF/UDM/UDR/NRF.\n
+    \                              # set it to \"yes\" to use with the minimalist
+    deployment scenario (including only AMF/SMF/UPF) by using the internal AUSF/UDM
+    implemented inside AMF.\n                               # There's no NRF in this
+    scenario, SMF info is taken from \"nfs\" section.\n    enable_nssf: yes\n    enable_smf_selection:
+    yes\n  relative_capacity: 30\n  statistics_timer_interval: 20  # in seconds\n
+    \ emergency_support: false\n  served_guami_list:\n    - mcc: 208\n      mnc: 95\n
+    \     amf_region_id: 01\n      amf_set_id: 001\n      amf_pointer: 01\n  plmn_support_list:\n
+    \   - mcc: 208\n      mnc: 95\n      tac: 0x0001\n      nssai:\n        - sst:
+    1\n        - sst: 2\n        - sst: 3\n  supported_integrity_algorithms:\n    -
+    \"NIA1\"\n    - \"NIA2\"\n  supported_encryption_algorithms:\n    - \"NEA0\"\n
+    \   - \"NEA1\"\n    - \"NEA2\"\n\n\n############### LMF Configuration \nlmf:\n
+    \ http_threads_count: 8\n  gnb_id_bits_count: 28\n  num_gnb: 1\n  trp_info_wait_ms:
+    10000\n  positioning_wait_ms: 10000\n  measurement_wait_ms: 10000\n  support_features:\n
+    \   request_trp_info: no\n    determine_num_gnb: yes\n    use_http2: yes\n    use_fqdn_dns:
+    no\n    register_nrf: yes\n"
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: 5gc
+    meta.helm.sh/release-namespace: nexslice
+  creationTimestamp: "2025-11-22T16:53:55Z"
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: oai-amf-configmap
+  namespace: nexslice
+  resourceVersion: "881"
+  uid: 5546bbe0-d510-4105-8ee5-7ba67939799e
