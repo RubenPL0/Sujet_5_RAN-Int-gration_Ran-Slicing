@@ -56,7 +56,7 @@ Ce document decrit l'integration du gNB ORANSlice avec le coeur 5G NexSlice pour
     | IMSI 041  |         | IMSI 042  |         | IMSI 043  |
     | SST=1     |         | SST=2     |         | SST=3     |
     | DNN: oai  |         | DNN: oai2 |         | DNN: oai3 |
-    | 12.1.1.2  |         | 12.1.2.2  |         | 12.1.3.2  |
+    | 12.1.1.X  |         | 12.1.2.X  |         | 12.1.3.X  |
     +-----------+         +-----------+         +-----------+
 ```
 

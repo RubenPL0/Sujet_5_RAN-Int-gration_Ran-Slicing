@@ -1,7 +1,6 @@
 #!/bin/bash
 # ==============================================
 # SCRIPT DE DEPLOIEMENT ORANSLICE + NEXSLICE
-# Version ADAPTATIVE SIMPLIFIEE - 30/11/2025
 # ==============================================
 
 NAMESPACE="nexslice"
