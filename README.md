@@ -4,6 +4,10 @@
 # Sommaire du Projet
 1. [Prise en main](#prise-en-main)
 2. [# État de l'Art : RAN Slicing](#etat-de-l-art-:ran-slicing)
+3. [UERANSIM solution](#ueransim-solution)
+4. [ORANSlice – Intégration RAN Slicing](#oranslice-et-nexslice)
+5. [Conclusion du projet](#conclusion-du-projet)
+
 
 > Avant d'implémenter une de nos solutions, veuillez vous assurer d'avoir implémenté le coeur de réseau 5G [Nexslice](https://github.com/AIDY-F2N/NexSlice/tree/k3s) sous k3s.
 
@@ -470,3 +474,909 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 
 ### Projets Open Source
 - [NexSlice (AIDY-F2N) — Branche K3s](https://github.com/AIDY-F2N/NexSlice/tree/k3s)
+
+
+---
+# UERANSIM solution
+
+<p align="justify">
+Afin de déployer cette solution, déplacez-vous dans le répertoire de travail :
+</p>
+
+```bash
+cd ./Sujet_5_RAN-Integration_RAN-Slicing
+```
+
+> À noter : Afin que cette solution fonctionne, assurez-vous que vos pods gNB et UEs UERANSIM soient en état "Running". Vérifiez les logs de votre gNB, que votre UE soit bien attaché au reste du réseau. Vérifiez les logs de vos UEs également pour s'assurer qu'ils ont bien obtenu une adresse IP.
+
+<p align="justify">
+Vous allez ensuite devoir lancer une série de script dans le but de lancer la simulation de RAN slicing.
+</p>
+
+## 1. Script d'installation et Configuration
+
+Lancer le premier script:
+```bash
+./1_setup_improved_tests.sh
+```
+
+Qui permet la configuration des limitations QoS et règles de routage au cas où il y aurait un problème.
+
+Exécution du premier script:
+
+
+<img width="700" height="800" alt="image" src="https://github.com/user-attachments/assets/8b930ea7-e2e7-43c0-8862-24b29c40978e" />
+
+<p align="justify">
+En effet, ce script remet le cluster dans un état cohérent avec ce qu’on attend d’un UPF dans un vrai réseau 5G. Il réactive des mécanismes essentiels comme l’<strong>IP forwarding</strong> et le <strong>NAT</strong>, qui n’existent pas par défaut dans un pod Kubernetes. Cela permet de simuler correctement le comportement d’un UPF réel et de garantir que le trafic des UEs circule normalement à travers le cluster. Autrement dit, le script sert à remettre en place les paramètres réseau indispensables pour que les tests de slicing soient fiables.
+</p>
+
+<p align="justify">
+Pour ce faire, il réinstalle du NAT pour que les paquets venant des UEs ressortent avec une adresse IP acceptable par le cluster et la passerelle. C’est indispensable, car les UEs utilisent des adresses internes qui ne peuvent pas être routées directement. Le NAT assure leur “traduction” et permet au trafic de circuler normalement entre l’UE et l’extérieur.
+</p>
+
+<p align="justify">
+Il permet d'imposer une limite de débit via <code>tc</code>, ce qui permet de simuler le partage radio entre slices (eMBB, URLLC, mMTC) directement au niveau des UPFs. L’ensemble est une façon simple mais efficace de rendre visibles les effets du slicing dans un environnement Kubernetes qui, par défaut, ne garantit ni isolation, ni routage cohérent, ni shaping.
+</p>
+
+<p align="justify">
+Le script ne se contente pas de réparer le comportement réseau des UPFs : il lit aussi le fichier <code>5_rrmPolicy.json</code>, qui contient les limites de ressources attribuées à chaque slice. Ce fichier définit notamment un champ <code>maxPRB</code> pour eMBB, URLLC et mMTC, et le script interprète ces valeurs comme des débits maximums à appliquer. En pratique, cela permet d’ajuster automatiquement la QoS imposée aux UPFs en fonction de la politique de slicing définie.
+</p>
+
+--- 
+### 1.1 Vérification de l'application des politiques QoS
+
+<p align="justify">
+Il est ensuite possible de vérifier que les politiques de QoS ont bien été appliquées aux UPFs pour chaque slice, via la commande (remplacer <numero_upf> par l'upf souhaité) :
+</p>
+	
+```bash
+sudo k3s kubectl exec -n nexslice $(sudo k3s kubectl get pods -n nexslice -l app.kubernetes.io/name=oai-upf<numero_upf> -o jsonpath='{.items[0].metadata.name}') -- tc qdisc show dev eth0
+```
+
+<img width="800" height="153" alt="image" src="https://github.com/user-attachments/assets/0a480db1-8a2e-4754-9a24-3495b78cd9d7" />
+
+<p align="justify">
+Vérifiez que les politiques de QoS ont bien été appliquées à tous vos UPF. Sur cette image, nous avons pris pour exemple les détails de l'UPF2.
+</p>
+
+La réponse se lit comme suit:
+
+- TBF = Token Bucket Filter (le limiteur de débit)
+- rate 45Mbit = le débit maximum autorisé
+- burst 16Kb = tolérance de burst
+- lat 50ms = latence maximale induite
+
+---
+
+## 2. Étape de tests
+
+Lancer ensuite le deuxième script:
+
+```bash
+./2_Full_Tests.sh
+```
+
+<p align="justify">
+Ce script automatise entièrement les tests de performance du slicing dans NexSlice. Il identifie les pods UEs et le serveur de trafic, lance plusieurs instances iperf3 et vérifie la connectivité 5G. Il réalise ensuite deux séries de mesures : 
+</p>
+
+- Un test séquentiel (un UE à la fois) pour observer le débit isolé de chaque slice
+- Un test concurrent où les trois UEs génèrent du trafic en même temps afin d’évaluer l’isolation et le partage des ressources entre eMBB, URLLC et mMTC.
+
+<p align="justify">
+Le script calibre aussi la capacité physique de la machine via un test UDP saturant, ce qui permet d’interpréter correctement les performances TCP mesurées. Enfin, il calcule automatiquement les ratios entre les slices et les compare aux objectifs définis dans la politique de slicing.
+</p>
+
+Vous pourrez visualiser ci-dessous le résultat:
+
+
+<img width="500" height="700" alt="image" src="https://github.com/user-attachments/assets/590c442c-5023-4058-a735-9bcbc3674509" />
+
+<img width="600" height="500" alt="image" src="https://github.com/user-attachments/assets/02a54173-88ff-45ec-ade9-7241d0f63713" />
+
+<img width="500" height="700" alt="image" src="https://github.com/user-attachments/assets/d802c1eb-8a53-4bb7-a783-5d67275201c3" />
+
+### Analyse des tests :
+
+**Résultats des tests séquentiels (sans congestion) :**
+
+| Slice | UE | QoS configurée (Max PRB) | Débit mesuré | Utilisation | Verdict |
+|-------|-----|----------------|--------------|-------------|---------|
+| eMBB | UE1 | 106 Mbps | **51.91 Mbps** | 48.9% | Conforme |
+| URLLC | UE2 | 45 Mbps | **41.01 Mbps** | 91.13% | Conforme |
+| mMTC | UE3 | 22 Mbps | **20.04 Mbps** | 91.09% | Conforme |
+
+**Observations importantes :**
+- Le slice **eMBB** atteint 48.9% de sa limite, nous expliquerons après pourquoi cela est attendu.
+- Le slice **URLLC atteint 91.13%**
+- Le slice **eMBB atteint 91.09%**
+
+**Calibration UDP :** Un test UDP de calibration a mesuré la **capacité physique maximale** de la machine à **102.63 Mbps**. Cette valeur représente le débit maximum que peut gérer l'environnement virtualisé en simulation "tout-en-un".
+
+**Le débit TCP eMBB (51.91 Mbps) représente environ 50% de la capacité physique UDP** (102.63 Mbps). Cette différence est normale et attendue car :
+- **TCP** utilise un contrôle de congestion conservateur (slow start, congestion avoidance)
+- **Retransmissions TCP** : La simulation UERANSIM génère des pertes de paquets qui déclenchent des retransmissions, réduisant le débit effectif
+- **Latence CPU** : L'environnement virtualisé introduit de la latence qui impacte particulièrement TCP
+- **Overhead protocole** : TCP a plus d'overhead que UDP (accusés de réception, fenêtres de congestion)
+
+**Conclusion partielle :** Les trois slices respectent leurs limites QoS. Les slices URLLC et mMTC atteignent quasiment leur limite, confirmant l'efficacité du Traffic Control sur les UPFs.
+
+---
+
+**Résultats des tests concurrents (saturation réseau) :**
+
+Lorsque les 3 UEs transmettent simultanément pendant 30 secondes, la différenciation par slice devient particulièrement visible :
+
+| Slice | Débit concurrent | Ratio mesuré | Ratio attendu | Verdict |
+|-------|------------------|--------------|---------------|---------|
+| eMBB | **49.67 Mbps** | - | - | Priorité haute |
+| URLLC | **40.91 Mbps** | eMBB/URLLC = **1.21x** | 2.0x | Proche |
+| mMTC | **20.06 Mbps** | eMBB/mMTC = **2.48x** | 5.0x | Écart significatif |
+
+**Analyse détaillée :**
+
+Les ratios mesurés (1.21x et 2.48x) s'écartent des ratios théoriques attendus (2.0x et 5.0x). Cette différence s'explique par plusieurs facteurs :
+
+1. **Limitation physique de la machine (102.63 Mbps) :** 
+   - Débit total concurrent : 49.67 + 40.91 + 20.06 = **110.64 Mbps**
+   - Ce total **dépasse légèrement** la capacité UDP mesurée (102.63 Mbps)
+   - Le système est donc en **saturation partielle**
+
+2. **QoS individuelles respectées :**
+   - eMBB : 49.67 Mbps < 106 Mbps (limite)
+   - URLLC : 40.91 Mbps < 45 Mbps (proche de la limite)
+   - mMTC : 20.06 Mbps < 22 Mbps (proche de la limite)
+
+3. **Isolation validée malgré l'écart :**
+   - Le slice **mMTC maintient ses 20 Mbps** même en charge → Isolation effective
+   - Le slice **eMBB reste prioritaire** (49.67 > 40.91 > 20.06) → Hiérarchie respectée
+   - En situation de charge, **eMBB > URLLC > mMTC** est observé comme souhaité
+
+4. **Pourquoi les ratios théoriques ne sont pas atteints :**
+   - Les QoS sont configurées pour **106/45/22 Mbps** (ratio d'environ 4.8:2.04:1)
+   - Mais la **capacité physique totale** n'est que de **102.63 Mbps**
+   - Il est donc **physiquement impossible** d'atteindre les ratios théoriques en saturant tous les slices simultanément
+   - Les ratios observés (1.21x et 2.48x) reflètent la **répartition réelle** en fonction de la capacité disponible
+
+**Conclusion des tests concurrents :**
+Bien que les ratios théoriques ne soient pas atteints en raison de la **limitation physique de la machine hôte** (102.63 Mbps), les résultats démontrent clairement :
+1. **Isolation effective** : Chaque slice reste dans sa limite QoS
+2. **Priorisation fonctionnelle** : eMBB > URLLC > mMTC même en charge
+3. **Limitation environnement** : La VM limite le débit total disponible
+
+
+
+## 3. Étape de nettoyage
+Lancer le troisième script:
+
+```bash
+./3_cleanup_iperf3.sh
+```
+
+<img width="817" height="319" alt="image" src="https://github.com/user-attachments/assets/572f3e2f-badb-4d22-9c9d-fd1f87ba1808" />
+
+
+## 4. Démonstration
+
+Lancer le quatrième script:
+
+```bash
+./4_demo_final_ran_slicing.sh
+```
+Ce script résume les fonctionnalités de la solution RAN Slicing UERANSIM.
+
+## 5. Fichier de configuration
+Explication du fichier de configuration utilisé pour définir les limites de QoS.
+
+Pour le visualiser, effectuez la commande :
+
+```bash
+cat ./5_rrmPolicy.json
+```
+
+Voici un aperçu:
+
+<img width="510" height="600" alt="identifiant unique du slice" src="https://github.com/user-attachments/assets/12ae8858-6cad-4925-b46f-7d9ef9415e7f" />
+
+
+---
+
+# Integration ORANSlice + NexSlice Core 5G
+
+## Résumé
+
+Ce document decrit l'integration du gNB ORANSlice avec le coeur 5G NexSlice pour demontrer le RAN Slicing avec 3 slices reseau (eMBB, URLLC, mMTC).
+
+### Etat actuel
+
+| Composant | Etat | Details |
+|-----------|------|---------|
+| Control Plane | Fonctionnel | gNB connecte, UEs enregistres, PDU Sessions etablies |
+| Data Plane | Non fonctionnel | Paquets IP ne traversent pas le tunnel GTP-U |
+
+---
+
+## Architecture Déployée
+```
++------------------------------------------------------------------+
+|                      NexSlice Core 5G (K3s)                      |
+|                                                                  |
+|  +-----+  +-----+  +-----+  +-----+  +-----+  +-----+  +-----+  |
+|  | NRF |  |NSSF |  | AMF |  | SMF |  | UDM |  | UDR |  |AUSF |  |
+|  +-----+  +-----+  +--+--+  +--+--+  +-----+  +-----+  +-----+  |
+|                       | N2     | N4                              |
+|                       |        |                                 |
+|                  +----+--------+--------------------+            |
+|                  |         UPF Pool                 |            |
+|                  |  +------+ +------+ +------+      |            |
+|                  |  | UPF1 | | UPF2 | | UPF3 |      |            |
+|                  |  |SST=1 | |SST=2 | |SST=3 |      |            |
+|                  |  |12.1.1| |12.1.2| |12.1.3|      |            |
+|                  |  +------+ +------+ +------+      |            |
+|                  +-------------+--------------------+            |
++--------------------------------|--------------------------------+
+                                 | N3 (GTP-U)
+                                 |
++--------------------------------|--------------------------------+
+|                    ORANSlice gNB                                |
+|  +----------------------------------------------------------+   |
+|  |                MAC Scheduler avec RAN Slicing            |   |
+|  |  +----------------+----------------+----------------+     |   |
+|  |  |   Slice 1      |   Slice 2      |   Slice 3      |     |   |
+|  |  |   SST=1        |   SST=2        |   SST=3        |     |   |
+|  |  |   eMBB         |   URLLC        |   mMTC         |     |   |
+|  |  |   40-80% PRBs  |   20-40% PRBs  |   5-30% PRBs   |     |   |
+|  |  +----------------+----------------+----------------+     |   |
+|  +----------------------------------------------------------+   |
+|                               |                                 |
+|                          RFsimulator                            |
++-------------------------------|---------------------------------+
+                                |
+          +---------------------+---------------------+
+          |                     |                     |
+    +-----+-----+         +-----+-----+         +-----+-----+
+    | UE eMBB   |         | UE URLLC  |         | UE mMTC   |
+    | IMSI 041  |         | IMSI 042  |         | IMSI 043  |
+    | SST=1     |         | SST=2     |         | SST=3     |
+    | DNN: oai  |         | DNN: oai2 |         | DNN: oai3 |
+    | 12.1.1.X  |         | 12.1.2.X  |         | 12.1.3.X  |
+    +-----------+         +-----------+         +-----------+
+```
+
+---
+
+## Configuration des Slices
+
+### rrmPolicy.json (RAN Slicing)
+```json
+{
+  "rrmPolicyRatio": [
+    {
+      "sst": 1,
+      "sd": 16777215,
+      "dedicated_ratio": 10,
+      "min_ratio": 40,
+      "max_ratio": 80
+    },
+    {
+      "sst": 2,
+      "sd": 16777215,
+      "dedicated_ratio": 20,
+      "min_ratio": 20,
+      "max_ratio": 40
+    },
+    {
+      "sst": 3,
+      "sd": 16777215,
+      "dedicated_ratio": 5,
+      "min_ratio": 5,
+      "max_ratio": 30
+    }
+  ]
+}
+```
+
+### Correspondance Slice - UPF - Subnet
+
+| Slice | SST | SD | DNN | UPF | Subnet | Ratio PRBs |
+|-------|-----|-----|-----|-----|--------|------------|
+| eMBB | 1 | 0xFFFFFF | oai | UPF1 | 12.1.1.0/24 | 40-80% |
+| URLLC | 2 | 0xFFFFFF | oai2 | UPF2 | 12.1.2.0/24 | 20-40% |
+| mMTC | 3 | 0xFFFFFF | oai3 | UPF3 | 12.1.3.0/24 | 5-30% |
+
+---
+
+## Ce qui fonctionne (Control Plane)
+
+### 1. Connexion gNB - AMF (NGAP/SCTP)
+```
+[GNB_APP] Received NGAP_REGISTER_GNB_CNF: associated AMF 1
+[AMF] gNB-ORANSlice Connected (Global Id: 0x1E0000)
+```
+
+### 2. Enregistrement des UEs (5GMM)
+```
+5GMM-REGISTERED | 208950000000041 | eMBB  (SST=1)
+5GMM-REGISTERED | 208950000000042 | URLLC (SST=2)
+5GMM-REGISTERED | 208950000000043 | mMTC  (SST=3)
+```
+
+### 3. Etablissement PDU Sessions
+
+Chaque UE obtient une IP du bon UPF selon son slice :
+- UE eMBB : 12.1.1.2/24 (via UPF1)
+- UE URLLC : 12.1.2.2/24 (via UPF2)
+- UE mMTC : 12.1.3.2/24 (via UPF3)
+
+### 4. Creation Tunnels GTP-U
+```
+[GTPU] Created tunnel for UE ID 1, teid incoming: xxx, teid outgoing: 8
+       to remote IPv4: 10.42.0.133 (UPF1)
+[GTPU] Created tunnel for UE ID 2, teid incoming: xxx, teid outgoing: 9
+       to remote IPv4: 10.42.0.134 (UPF2)
+[GTPU] Created tunnel for UE ID 3, teid incoming: xxx, teid outgoing: 10
+       to remote IPv4: 10.42.0.135 (UPF3)
+```
+
+### 5. Configuration RAN Slicing
+```
++++++++ Configured slices at MAC +++++++
+Slice id = 1 [ sst = 1, sd = ffffff ]
+Slice id = 2 [ sst = 2, sd = ffffff ]
+Slice id = 3 [ sst = 3, sd = ffffff ]
+```
+
+### 6. SDAP Layer
+```
+[GNB_APP] SDAP layer is enabled
+```
+
+---
+
+## Ce qui ne fonctionne pas (Data Plane)
+
+### Symptome
+```bash
+$ ping 12.1.1.1  # depuis UE eMBB
+3 packets transmitted, 0 received, 100% packet loss
+```
+
+### Analyse du probleme
+
+La chaine de transmission des paquets IP est :
+```
+UE App - TUN interface - NAS - PDCP - SDAP - RLC - MAC - PHY - RFsim
+                                  |
+                              GTP-U encap
+                                  |
+                                 UPF
+```
+
+Le probleme se situe entre PDCP/SDAP et GTP-U : les paquets IP ne sont pas encapsules et envoyes vers l'UPF.
+
+### Preuves
+
+1. Interface TUN creee : oaitun_ue1 avec IP 12.1.1.2 [OK]
+2. Tunnel GTP cree : TEID configure vers UPF [OK]
+3. SDAP active : enable_sdap=1 [OK]
+4. Mais : Compteurs UDP du gNB n'augmentent pas lors du ping
+5. Et : Interface tun0 de l'UPF ne recoit rien (RX packets = 0)
+
+### Cause probable
+
+L'image ORANSlice est un fork d'OAI modifie pour supporter le RAN Slicing. Ces modifications ont probablement :
+
+1. Casse ou desactive le forwarding des paquets dans la couche SDAP/PDCP
+2. Introduit un bug dans le mapping QoS Flow - DRB - GTP tunnel
+3. N'ont pas ete testees avec RFsimulator en mode data plane
+
+---
+
+## Configurations Effectuees
+
+### 1. ConfigMap gNB (oranslice-gnb-config)
+
+Parametres cles ajoutes :
+```conf
+gNBs = (
+  {
+    gNB_ID = 0x1e000;
+    gNB_name = "gNB-ORANSlice";
+    enable_sdap = 1;  // Active pour le data plane
+    
+    plmn_list = ({
+      mcc = 208;
+      mnc = 95;
+      snssaiList = (
+        { sst = 1; },  // eMBB
+        { sst = 2; },  // URLLC
+        { sst = 3; }   // mMTC
+      );
+    });
+    
+    amf_ip_address = ({ ipv4 = "oai-amf"; });
+  }
+);
+
+MACRLCs = ({
+  SliceConf = "/oai-ran/etc/rrmPolicy.json";
+});
+```
+
+### 2. Subscribers MySQL
+```sql
+-- AuthenticationSubscription
+INSERT INTO oai_db.AuthenticationSubscription VALUES
+('208950000000041', '5G_AKA', 'key...', ...),  -- eMBB
+('208950000000042', '5G_AKA', 'key...', ...),  -- URLLC
+('208950000000043', '5G_AKA', 'key...', ...);  -- mMTC
+
+-- SessionManagementSubscriptionData
+INSERT INTO oai_db.SessionManagementSubscriptionData VALUES
+('208950000000041', '20895', '{"sst":1,"sd":"FFFFFF"}', '{"oai":{...}}'),
+('208950000000042', '20895', '{"sst":2,"sd":"FFFFFF"}', '{"oai2":{...}}'),
+('208950000000043', '20895', '{"sst":3,"sd":"FFFFFF"}', '{"oai3":{...}}');
+```
+
+### 3. Déploiements UEs
+
+Trois déploiements separes :
+- ue-embb-oai : IMSI 041, SST=1, DNN=oai
+- ue-urllc-oai : IMSI 042, SST=2, DNN=oai2
+- ue-mmtc-oai : IMSI 043, SST=3, DNN=oai3
+
+### 4. Service DNS pour gNB
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: oranslice-gnb
+  namespace: nexslice
+spec:
+  selector:
+    app: oranslice-gnb
+  ports:
+    - name: rfsim
+      port: 4043
+      targetPort: 4043
+```
+
+---
+
+## Script de Validation
+```bash
+~./scripts/validate-oranslice.sh
+```
+
+Affiche :
+1. Connexion gNB - AMF
+2. Etat SDAP
+3. Slices configurees
+4. UEs enregistres
+5. Tunnels GTP
+6. Etat des pods
+7. IPs des UEs
+8. Correspondance Slice - UPF
+
+---
+
+## Commandes de Diagnostic
+
+### Verifier la connexion gNB-AMF
+```bash
+sudo k3s kubectl logs -n nexslice deployment/oai-amf | grep "gNB-ORANSlice"
+```
+
+### Verifier les UEs enregistres
+```bash
+sudo k3s kubectl logs -n nexslice deployment/oai-amf | grep "5GMM-REGISTERED"
+```
+
+### Verifier les slices configurees
+```bash
+sudo k3s kubectl logs -n nexslice deployment/oranslice-gnb | grep "Slice id"
+```
+
+### Verifier SDAP
+```bash
+sudo k3s kubectl logs -n nexslice deployment/oranslice-gnb | grep -i "sdap"
+```
+
+### Verifier les tunnels GTP
+```bash
+sudo k3s kubectl logs -n nexslice deployment/oranslice-gnb | grep "Created tunnel"
+```
+
+### Verifier les IPs des UEs
+```bash
+sudo k3s kubectl exec -n nexslice deployment/ue-embb-oai -- ip addr show oaitun_ue1
+sudo k3s kubectl exec -n nexslice deployment/ue-urllc-oai -- ip addr show oaitun_ue1
+sudo k3s kubectl exec -n nexslice deployment/ue-mmtc-oai -- ip addr show oaitun_ue1
+```
+
+### Tester le data plane (echec attendu)
+```bash
+sudo k3s kubectl exec -n nexslice deployment/ue-embb-oai -- ping -c 3 12.1.1.1
+```
+
+---
+
+## Fichiers de Configuration
+
+| Fichier | Emplacement | Description |
+|---------|-------------|-------------|
+| rrmPolicy.json | ConfigMap oranslice-gnb-config | Politique RAN Slicing |
+| gnb.conf | ConfigMap oranslice-gnb-config | Config gNB avec enable_sdap |
+| ue-embb.yaml | ~/NexSlice/k8s/ | Déploiement UE eMBB |
+| ue-urllc.yaml | ~/NexSlice/k8s/ | Déploiement UE URLLC |
+| ue-mmtc.yaml | ~/NexSlice/k8s/ | Déploiement UE mMTC |
+
+---
+
+## Limitations et Solutions Futures
+
+### Limitations
+
+Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'est une limitation de l'implementation ORANSlice, pas de l'architecture NexSlice.
+
+### Solutions possibles
+
+1. Architecture desagregee OAI (CU-CP + CU-UP + DU)
+   - Peut mieux gerer le data plane
+   - Plus complexe à deployer
+
+2. Contacter les auteurs ORANSlice
+   - Signaler le bug de forwarding SDAP/GTP-U
+   - Demander une mise a jour
+
+3. FlexRIC + xApp pour le slicing
+   - Alternative au RAN slicing integre
+   - Controle dynamique via E2
+
+---
+
+## Conclusion
+
+L'integration ORANSlice + NexSlice :
+
+Control Plane complet :
+- Connexion N2 (NGAP) entre gNB et AMF
+- Enregistrement 5G des UEs avec leurs slices respectives
+- Etablissement des PDU Sessions vers les bons UPFs
+- Configuration RAN Slicing avec allocation PRBs par slice
+- Creation des tunnels GTP-U N3
+
+Data Plane non fonctionnel :
+- Limitation de l'image ORANSlice
+- Les paquets IP ne traversent pas la chaine radio simulee
+
+Cette integration prouve la faisabilite architecturale du slicing E2E avec NexSlice, meme si le data plane necessite une correction dans l'implementation ORANSlice.
+
+---
+# Notice de Déploiement et Test ORANSlice + NexSlice
+
+## Prérequis
+
+- Cluster K3s fonctionnel avec NexSlice déployé
+- Namespace `nexslice` avec le cœur 5G opérationnel (AMF, SMF, UPFs, NSSF, etc.)
+- 3 UPFs configurés pour les 3 slices (oai-upf, oai-upf2, oai-upf3)
+
+
+---
+
+## 1. Vérification du Cœur 5G
+
+Avant de déployer ORANSlice, vérifier que le cœur NexSlice est opérationnel :
+
+```bash
+# Vérifier les pods du cœur 5G
+kubectl get pods -n nexslice | grep -E "amf|smf|upf|nssf|nrf|udr|udm|ausf"
+
+# Tous les pods doivent être Running et Ready
+```
+
+### Résultat attendu
+
+```
+oai-amf-xxx          1/1     Running
+oai-smf-xxx          1/1     Running
+oai-upf-xxx          1/1     Running
+oai-upf2-xxx         1/1     Running
+oai-upf3-xxx         1/1     Running
+oai-nssf-xxx         1/1     Running
+...
+```
+
+---
+
+## 2. Déploiement ORANSlice gNB
+
+```bash
+# Déploiement autotmatisé
+./deploy.sh
+```
+
+### 2.1 Appliquer les ConfigMaps
+
+```bash
+# ConfigMap de configuration gNB
+kubectl apply -f k3s/configmap-gnb-current.yaml -n nexslice
+
+# ConfigMap de politique RRM (allocation PRBs par slice)
+kubectl apply -f k3s/configmap-rrmpolicy.yaml -n nexslice
+```
+
+### 2.2 Déployer le gNB
+
+```bash
+# Déploiement du gNB ORANSlice avec RFsimulator
+kubectl apply -f k3s/deployment-oranslice-rfsim.yaml -n nexslice
+
+# Service pour exposer le gNB
+kubectl apply -f k3s/service-oranslice.yaml -n nexslice
+```
+
+### 2.3 Vérifier le déploiement
+
+```bash
+# Attendre que le pod soit Running
+kubectl get pods -n nexslice | grep oranslice
+
+# Vérifier les logs de démarrage
+kubectl logs -n nexslice -l app=oranslice-gnb --tail=50
+```
+
+### Résultat attendu
+
+Le gNB doit afficher :
+
+- `Initializing gNB`
+- `NGAP: Connected to AMF`
+- `Slices configured: 3`
+
+---
+
+## 3. Déploiement des UEs
+
+### 3.1 Déployer les 3 UEs
+
+```bash
+# Déploiement des 3 UEs (eMBB, URLLC, mMTC)
+kubectl apply -f k3s/ues-3slices-rfsim.yaml -n nexslice
+```
+
+### 3.2 Vérifier les UEs
+
+```bash
+# Vérifier que les 3 pods UE sont Running
+kubectl get pods -n nexslice | grep ue-
+
+# Résultat attendu :
+# ue-embb-xxx     1/1     Running
+# ue-urllc-xxx    1/1     Running
+# ue-mmtc-xxx     1/1     Running
+```
+
+---
+
+## 4. Validation de l'Intégration
+
+### 4.1 Test rapide (script automatisé)
+
+```bash
+# Exécuter le script de validation complet
+./scripts/validate-oranslice.sh
+```
+
+### 4.2 Tests manuels détaillés
+
+#### A. Vérifier la connexion gNB → AMF
+
+```bash
+# Le gNB doit apparaître dans les logs AMF
+kubectl logs -n nexslice -l app=oai-amf --tail=100 | grep -i "gnb\|NG Setup"
+
+# Résultat attendu : "NG Setup successful" ou "gNB connected"
+```
+
+#### B. Vérifier l'enregistrement des UEs
+
+```bash
+# UE eMBB (IMSI 041)
+kubectl logs -n nexslice -l app=oai-amf --tail=200 | grep "208950000000041"
+
+# UE URLLC (IMSI 042)
+kubectl logs -n nexslice -l app=oai-amf --tail=200 | grep "208950000000042"
+
+# UE mMTC (IMSI 043)
+kubectl logs -n nexslice -l app=oai-amf --tail=200 | grep "208950000000043"
+
+# Résultat attendu pour chaque UE : "5GMM-REGISTERED"
+```
+
+#### C. Vérifier les PDU Sessions
+
+```bash
+# Vérifier que chaque UE a une session PDU
+kubectl logs -n nexslice -l app=oai-smf --tail=100 | grep -i "pdu session\|allocated"
+
+# Vérifier les IPs attribuées par UPF
+kubectl exec -n nexslice -l app=ue-embb -- ip addr show oaitun_ue1
+kubectl exec -n nexslice -l app=ue-urllc -- ip addr show oaitun_ue1
+kubectl exec -n nexslice -l app=ue-mmtc -- ip addr show oaitun_ue1
+
+# Résultat attendu :
+# UE eMBB  → 12.1.1.x (UPF1)
+# UE URLLC → 12.1.2.x (UPF2)
+# UE mMTC  → 12.1.3.x (UPF3)
+```
+
+#### D. Vérifier le RAN Slicing au niveau MAC
+
+```bash
+# Vérifier que le scheduler MAC gère les 3 slices
+kubectl logs -n nexslice -l app=oranslice-gnb --tail=200 | grep -i "slice"
+
+# Résultat attendu : logs montrant "Slice id 0 (sst=1)", "Slice id 1 (sst=2)", "Slice id 2 (sst=3)"
+```
+
+#### E. Vérifier la politique RRM
+
+```bash
+# Afficher la politique RRM configurée
+kubectl get configmap configmap-rrmpolicy -n nexslice -o jsonpath='{.data.rrmPolicy\.json}' | jq .
+
+# Résultat attendu : ratios PRBs par slice (eMBB 40-80%, URLLC 20-40%, mMTC 5-30%)
+```
+
+---
+
+## 5. Tests de Connectivité Data Plane
+
+> **Note** : Le RFsimulator a des limitations connues pour le forwarding data plane. Les pings peuvent échouer même si le control plane fonctionne.
+
+### 5.1 Test Ping (peut échouer)
+
+```bash
+# Récupérer le nom exact des pods
+UE_EMBB=$(kubectl get pod -n nexslice -l app=ue-embb -o jsonpath='{.items[0].metadata.name}')
+UE_URLLC=$(kubectl get pod -n nexslice -l app=ue-urllc -o jsonpath='{.items[0].metadata.name}')
+UE_MMTC=$(kubectl get pod -n nexslice -l app=ue-mmtc -o jsonpath='{.items[0].metadata.name}')
+
+# Depuis UE eMBB vers Internet
+kubectl exec -n nexslice $UE_EMBB -- ping -c 3 8.8.8.8
+
+# Depuis UE URLLC
+kubectl exec -n nexslice $UE_URLLC -- ping -c 3 8.8.8.8
+
+# Depuis UE mMTC
+kubectl exec -n nexslice $UE_MMTC -- ping -c 3 8.8.8.8
+```
+
+### 5.2 Vérification alternative (tunnels GTP-U)
+
+Si le ping échoue, vérifier que les tunnels sont créés :
+
+```bash
+# Vérifier les tunnels GTP sur le gNB
+kubectl logs -n nexslice -l app=oranslice-gnb | grep -i "tunnel\|gtp"
+
+# Vérifier les sessions PFCP sur le SMF
+kubectl logs -n nexslice -l app=oai-smf | grep -i "pfcp\|session"
+```
+
+---
+
+## 6. Tableau Récapitulatif des Validations
+
+| Test | Commande | Résultat Attendu |
+|------|----------|------------------|
+| gNB connecté AMF | `kubectl logs -n nexslice -l app=oai-amf \| grep gnb` | "NG Setup successful" |
+| UE 041 enregistré | `kubectl logs -n nexslice -l app=oai-amf \| grep 041` | "5GMM-REGISTERED" |
+| UE 042 enregistré | `kubectl logs -n nexslice -l app=oai-amf \| grep 042` | "5GMM-REGISTERED" |
+| UE 043 enregistré | `kubectl logs -n nexslice -l app=oai-amf \| grep 043` | "5GMM-REGISTERED" |
+| IP UE eMBB | `kubectl exec -n nexslice $UE_EMBB -- ip addr` | 12.1.1.x |
+| IP UE URLLC | `kubectl exec -n nexslice $UE_URLLC -- ip addr` | 12.1.2.x |
+| IP UE mMTC | `kubectl exec -n nexslice $UE_MMTC -- ip addr` | 12.1.3.x |
+| Slices MAC | `kubectl logs -n nexslice -l app=oranslice-gnb \| grep slice` | 3 Slice id |
+| Politique RRM | `kubectl get configmap configmap-rrmpolicy -n nexslice` | Ratios PRBs |
+
+---
+
+## 7. Dépannage
+
+### Le gNB ne se connecte pas à l'AMF
+
+```bash
+# Vérifier l'IP de l'AMF
+kubectl get svc oai-amf -n nexslice -o jsonpath='{.spec.clusterIP}'
+
+# Vérifier la config du gNB
+kubectl get configmap configmap-gnb-current -n nexslice -o yaml | grep amf_ip
+```
+
+### Les UEs ne s'enregistrent pas
+
+```bash
+# Vérifier la connexion RFsimulator
+kubectl logs -n nexslice -l app=ue-embb | grep -i "connect\|rfsim"
+
+# Vérifier les credentials en base
+kubectl exec -it mongodb-0 -n nexslice -- mongosh --eval "use open5gs; db.subscribers.find({imsi: '208950000000041'}).pretty()"
+```
+
+### Pas de PDU Session
+
+```bash
+# Vérifier le NSSF
+kubectl logs -n nexslice -l app=oai-nssf | grep -i "slice\|selection"
+
+# Vérifier que les DNNs correspondent
+kubectl logs -n nexslice -l app=oai-smf | grep -i "dnn\|oai"
+```
+
+---
+
+## 8. Arrêt et Nettoyage
+
+```bash
+# Supprimer les UEs
+kubectl delete -f k3s/ues-3slices-rfsim.yaml -n nexslice
+
+# Supprimer le gNB
+kubectl delete -f k3s/deployment-oranslice-rfsim.yaml -n nexslice
+kubectl delete -f k3s/service-oranslice.yaml -n nexslice
+
+# Supprimer les ConfigMaps
+kubectl delete -f k3s/configmap-gnb-current.yaml -n nexslice
+kubectl delete -f k3s/configmap-rrmpolicy.yaml -n nexslice
+```
+
+---
+
+# Conclusion du projet
+
+Au final, ce projet ne s'est pas déroulé comme nous l'avions pensé. Nous avons rencontré des difficultés à trouver une solution fonctionnelle que nos ordinateurs portables pouvaient supporter. Au départ, nous avions prévu de partir sur une solution réelle. Nous nous sommes donc tournés vers ORANSlice, jusqu'à découvrir qu'il faudrait du vrai matériel pour pouvoir tester si le RAN slicing fonctionnait avec cet outil.
+
+Nous avons donc décidé de nous concentrer en parallèle sur un projet plus allégé, marchant avec UERANSIM, afin de simuler le comportement d'un RAN slicing, tout en gardant les principales caractéristiques du fonctionnement :
+
+    Application des politiques QoS sur les UPFs dans chaque slice
+    IP Forwarding
+    NAT
+
+Les résultats ont été satisfaisants. Nous avons également creusé au maximum ce que l'on pouvait d'ORANSlice afin d'obtenir :
+
+- Une connexion gNB-AMF
+- Une connexion des UEs au cœur de réseau
+- L'application des politiques de slicing
+
+<p align="justify">
+
+Ce projet nous a permis d'approfondir considérablement nos connaissances sur l'architecture 5G et ses enjeux. Nous avons découvert la complexité des interactions entre les différentes couches du réseau, notamment l'importance cruciale du slicing pour isoler et prioriser les flux de données selon les besoins applicatifs. La gestion dynamique des ressources radio et réseau, bien que théorique dans notre cas, nous a fait prendre conscience des défis réels auxquels font face les opérateurs télécoms aujourd'hui. </p> <p align="justify"> Au-delà des aspects techniques, ce projet nous a appris à adapter nos objectifs face aux contraintes matérielles et à trouver des solutions alternatives pour valider nos concepts. La nécessité de basculer d'une solution complète (ORANSlice) vers une approche simplifiée (UERANSIM) tout en conservant l'essence du slicing nous a permis de développer notre capacité à hiérarchiser les fonctionnalités essentielles et à faire des compromis intelligents. 
+
+</p>
+
+## Points d'amélioration identifiés
+
+Avec plus de temps et de ressources, plusieurs pistes auraient mérité d'être explorées :
+
+1. Améliorer les tests Core Network Slicing :
+
+    Déployer Prometheus + Grafana pour visualiser les métriques en temps réel
+    Tester des scénarios de mobilité (handover inter-SMF)
+    Implémenter des tests de charge avec davantage d'UEs (10-50 simultanés)
+    Mesurer la latence end-to-end en plus du débit
+
+2. Optimiser la configuration actuelle :
+
+    Réduire les QoS à 50/25/10 Mbps pour rester sous la capacité physique (102 Mbps)
+    Optimiser les paramètres TCP pour minimiser les retransmissions
+    Tester sur une machine plus puissante (8 vCPU, 16 GB RAM)
+
+<p align="justify"> En définitive, même si nous n'avons pas atteint tous nos objectifs initiaux, ce projet représente une expérience formatrice qui nous a confrontés aux réalités du déploiement d'infrastructures télécoms modernes. Les compétences acquises en orchestration Kubernetes, configuration réseau et debugging système nous seront certainement utiles dans nos futurs projets professionnels. </p>
+
+---
+
+**Projet 5: RAN Slicing** | 2025 | Télécom SudParis  
+*Auteurs : PRETI--LEVY Ruben, MARTIN Claire, MESMIN Aude*
