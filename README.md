@@ -35,10 +35,9 @@ Merci de Suivre les readme dans chaque dossier pour le deploiement de la solutio
 .
 ├── ORANSLICE-Intégration
 │   ├── README.md
-│   ├── docs
+│   ├── docs/
 │   ├── k3s-deploy-oranslice/
 │   ├── scripts/
-│   └── tests/
 └── Ueransim-5G
     ├── README.md
     ├── docs/
