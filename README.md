@@ -8,8 +8,7 @@
 3. [Références](#références)
 4. [UERANSIM solution](#ueransim-solution)
 5. [Integration ORANSlice + NexSlice Core 5G](#integration-oranslice--nexslice-core-5g)
-6. [Notice de Déploiement et Test ORANSlice + NexSlice](#notice-de-déploiement-et-test-oranslice--nexslice)
-7. [Conclusion du projet](#conclusion-du-projet)
+6. [Conclusion du projet](#conclusion-du-projet)
 
 > Avant d'implémenter une de nos solutions, veuillez vous assurer d'avoir implémenté le coeur de réseau 5G [Nexslice](https://github.com/AIDY-F2N/NexSlice/tree/k3s) sous k3s.
 
