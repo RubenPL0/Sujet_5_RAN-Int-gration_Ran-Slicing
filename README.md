@@ -2,10 +2,9 @@
 
 ## Sommaire 
 
-1. [Integration ORANSlice + NexSlice Core 5G](# Integration ORANSlice + NexSlice Core 5G)
-2. [État de l'Art : RAN Slicing](# État de l'Art : RAN Slicing)
-3. [ Notice de Déploiement et Test ORANSlice + NexSlice](# Notice de Déploiement et Test ORANSlice + NexSlice)
-
+[Integration ORANSlice + NexSlice Core 5G](#integration-oranslice--nexslice-core-5g)
+[État de l'Art : RAN Slicing](#etat-de-lart--ran-slicing)
+[Notice de Déploiement et Test ORANSlice + NexSlice](#notice-de-deploiement-et-test-oranslice--nexslice)
 
 # Integration ORANSlice + NexSlice Core 5G
 
