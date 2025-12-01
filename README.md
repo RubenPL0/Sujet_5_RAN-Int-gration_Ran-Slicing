@@ -7,7 +7,7 @@
 3. [ Notice de Déploiement et Test ORANSlice + NexSlice](# Notice de Déploiement et Test ORANSlice + NexSlice)
 
 
-#Integration ORANSlice + NexSlice Core 5G
+# Integration ORANSlice + NexSlice Core 5G
 
 ## Résumé
 
