@@ -339,26 +339,21 @@ sudo k3s kubectl exec -n nexslice deployment/ue-embb-oai -- ping -c 3 12.1.1.1
 
 ## Limitations et Solutions Futures
 
-### Limitation actuelle
+## Limitations
 
 Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'est une limitation de l'implementation ORANSlice, pas de l'architecture NexSlice.
 
 ### Solutions possibles
 
-1. Utiliser OAI officiel sans RAN slicing
-   - Image : oaisoftwarealliance/oai-gnb:2025.w18
-   - Avantage : Data plane fonctionnel
-   - Inconvenient : Pas de RAN slicing
-
-2. Architecture desagregee OAI (CU-CP + CU-UP + DU)
+1. Architecture desagregee OAI (CU-CP + CU-UP + DU)
    - Peut mieux gerer le data plane
-   - Plus complexe a deployer
+   - Plus complexe à deployer
 
-3. Contacter les auteurs ORANSlice
+2. Contacter les auteurs ORANSlice
    - Signaler le bug de forwarding SDAP/GTP-U
    - Demander une mise a jour
 
-4. FlexRIC + xApp pour le slicing
+3. FlexRIC + xApp pour le slicing
    - Alternative au RAN slicing integre
    - Controle dynamique via E2
 
