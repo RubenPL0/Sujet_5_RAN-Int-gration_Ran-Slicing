@@ -488,7 +488,7 @@ Afin de déployer cette solution, déplacez-vous dans le répertoire de travail 
 </p>
 
 ```bash
-cd ./Sujet_5_RAN-Integration_RAN-Slicing
+cd ./Sujet_5_RAN-Int-gration_Ran-Slicing/Ueransim-5G/scripts
 ```
 
 > À noter : Afin que cette solution fonctionne, assurez-vous que vos pods gNB et UEs UERANSIM soient en état "Running". Vérifiez les logs de votre gNB, que votre UE soit bien attaché au reste du réseau. Vérifiez les logs de vos UEs également pour s'assurer qu'ils ont bien obtenu une adresse IP.
@@ -1345,9 +1345,9 @@ Au final, ce projet ne s'est pas déroulé comme nous l'avions pensé. Nous avon
 
 Nous avons donc décidé de nous concentrer en parallèle sur un projet plus allégé, marchant avec UERANSIM, afin de simuler le comportement d'un RAN slicing, tout en gardant les principales caractéristiques du fonctionnement :
 
-    Application des politiques QoS sur les UPFs dans chaque slice
-    IP Forwarding
-    NAT
+- Application des politiques QoS sur les UPFs dans chaque slice
+- IP Forwarding
+- NAT
 
 Les résultats ont été satisfaisants. Nous avons également creusé au maximum ce que l'on pouvait d'ORANSlice afin d'obtenir :
 
