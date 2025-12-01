@@ -1,6 +1,6 @@
 # Integration ORANSlice + NexSlice Core 5G
 
-## Resume
+## Résumé
 
 Ce document decrit l'integration du gNB ORANSlice avec le coeur 5G NexSlice pour demontrer le RAN Slicing avec 3 slices reseau (eMBB, URLLC, mMTC).
 
@@ -181,7 +181,7 @@ Le probleme se situe entre PDCP/SDAP et GTP-U : les paquets IP ne sont pas encap
 
 ### Cause probable
 
-L'image ORANSlice est un fork d'OAI modifie pour supporter le RAN Slicing. Ces modifications ont probablement :
+L'image ORANSlice est un fork d'OAI modifié pour supporter le RAN Slicing. Ces modifications ont probablement :
 
 1. Casse ou desactive le forwarding des paquets dans la couche SDAP/PDCP
 2. Introduit un bug dans le mapping QoS Flow - DRB - GTP tunnel
@@ -338,20 +338,15 @@ Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'es
 
 ### Solutions possibles
 
-1. Utiliser OAI officiel sans RAN slicing
-   - Image : oaisoftwarealliance/oai-gnb:2025.w18
-   - Avantage : Data plane fonctionnel
-   - Inconvenient : Pas de RAN slicing
-
-2. Architecture desagregee OAI (CU-CP + CU-UP + DU)
+1. Architecture desagregee OAI (CU-CP + CU-UP + DU)
    - Peut mieux gerer le data plane
-   - Plus complexe a deployer
+   - Plus complexe à deployer
 
-3. Contacter les auteurs ORANSlice
+2. Contacter les auteurs ORANSlice
    - Signaler le bug de forwarding SDAP/GTP-U
    - Demander une mise a jour
 
-4. FlexRIC + xApp pour le slicing
+3. FlexRIC + xApp pour le slicing
    - Alternative au RAN slicing integre
    - Controle dynamique via E2
 
@@ -359,12 +354,12 @@ Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'es
 
 ## Conclusion
 
-L'integration ORANSlice + NexSlice demontre avec succes :
+L'integration ORANSlice + NexSlice :
 
 Control Plane complet :
 - Connexion N2 (NGAP) entre gNB et AMF
 - Enregistrement 5G des UEs avec leurs slices respectives
-- Etablissement des PDU Sessions vers les bons UPFs
+- Etablissement des PDU Sessions vers les UPFs
 - Configuration RAN Slicing avec allocation PRBs par slice
 - Creation des tunnels GTP-U N3
 

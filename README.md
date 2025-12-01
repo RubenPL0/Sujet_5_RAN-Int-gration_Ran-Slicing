@@ -57,10 +57,25 @@ Les dossiers `scripts/` contiennent les scripts de tests et d'installation.
 | Allocation PRBs par slice | non | ok |
 | Association UE-Slice au MAC | non | ok |
 
-Pour voir les scripts en action, merci de regarder la vidéo Résultat.mp4 dansle dossier.
+Pour voir les scripts en action, merci de regarder la vidéo `Résultat.mp4` dansle dossier.
 
 ## Limitations
 
+Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'est une limitation de l'implementation ORANSlice, pas de l'architecture NexSlice.
+
+### Solutions possibles
+
+1. Architecture desagregee OAI (CU-CP + CU-UP + DU)
+   - Peut mieux gerer le data plane
+   - Plus complexe à deployer
+
+2. Contacter les auteurs ORANSlice
+   - Signaler le bug de forwarding SDAP/GTP-U
+   - Demander une mise a jour
+
+3. FlexRIC + xApp pour le slicing
+   - Alternative au RAN slicing integre
+   - Controle dynamique via E2
 
 ---
 

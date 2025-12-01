@@ -1,16 +1,3 @@
-# Projet 5: RAN Slicing
-
-**Mesmin Aude, Martin Claire et Preti-Levy Ruben**
-_Fisa 2A_
-Sujet 5 – RAN Slicing
-
----
-# Sommaire du Projet
-
-2. [UERANSIM solution](#ueransim-solution)
-
-> Avant d'implémenter une de nos solutions, veuillez vous assurer d'avoir implémenté le coeur de réseau 5G [Nexslice](https://github.com/AIDY-F2N/NexSlice/tree/k3s) sous k3s.
-
 # UERANSIM solution
 
 <p align="justify">
