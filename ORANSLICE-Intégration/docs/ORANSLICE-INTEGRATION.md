@@ -13,7 +13,7 @@ Ce document decrit l'integration du gNB ORANSlice avec le coeur 5G NexSlice pour
 
 ---
 
-## Architecture Deployee
+## Architecture Déployée
 ```
 +------------------------------------------------------------------+
 |                      NexSlice Core 5G (K3s)                      |
@@ -235,9 +235,9 @@ INSERT INTO oai_db.SessionManagementSubscriptionData VALUES
 ('208950000000043', '20895', '{"sst":3,"sd":"FFFFFF"}', '{"oai3":{...}}');
 ```
 
-### 3. Deployments UEs
+### 3. Déploiements UEs
 
-Trois deployements separes :
+Trois déploiements sépares :
 - ue-embb-oai : IMSI 041, SST=1, DNN=oai
 - ue-urllc-oai : IMSI 042, SST=2, DNN=oai2
 - ue-mmtc-oai : IMSI 043, SST=3, DNN=oai3
@@ -324,9 +324,9 @@ sudo k3s kubectl exec -n nexslice deployment/ue-embb-oai -- ping -c 3 12.1.1.1
 |---------|-------------|-------------|
 | rrmPolicy.json | ConfigMap oranslice-gnb-config | Politique RAN Slicing |
 | gnb.conf | ConfigMap oranslice-gnb-config | Config gNB avec enable_sdap |
-| ue-embb.yaml | ~/NexSlice/k8s/ | Deployment UE eMBB |
-| ue-urllc.yaml | ~/NexSlice/k8s/ | Deployment UE URLLC |
-| ue-mmtc.yaml | ~/NexSlice/k8s/ | Deployment UE mMTC |
+| ue-embb.yaml | ~/NexSlice/k8s/ | Déploiement UE eMBB |
+| ue-urllc.yaml | ~/NexSlice/k8s/ | Déploiement UE URLLC |
+| ue-mmtc.yaml | ~/NexSlice/k8s/ | Déploiement UE mMTC |
 
 ---
 
@@ -340,7 +340,7 @@ Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'es
 
 1. Architecture desagregee OAI (CU-CP + CU-UP + DU)
    - Peut mieux gerer le data plane
-   - Plus complexe à deployer
+   - Plus complexe à déployer
 
 2. Contacter les auteurs ORANSlice
    - Signaler le bug de forwarding SDAP/GTP-U
