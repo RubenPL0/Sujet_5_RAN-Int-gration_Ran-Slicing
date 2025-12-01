@@ -2,7 +2,8 @@
 
 
 # Sommaire du Projet
-
+1. [Prise en main](#prise-en-main)
+2. [# État de l'Art : RAN Slicing](#etat-de-l-art-:ran-slicing)
 
 > Avant d'implémenter une de nos solutions, veuillez vous assurer d'avoir implémenté le coeur de réseau 5G [Nexslice](https://github.com/AIDY-F2N/NexSlice/tree/k3s) sous k3s.
 
