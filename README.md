@@ -3,12 +3,12 @@
 
 ## Sommaire 
 
-1. [Integration ORANSlice + NexSlice Core 5G](# Integration ORANSlice + NexSlice Core 5G)
-2. [État de l'Art : RAN Slicing](# État de l'Art : RAN Slicing)
-3. [ Notice de Déploiement et Test ORANSlice + NexSlice](# Notice de Déploiement et Test ORANSlice + NexSlice)
+1. [Integration ORANSlice + NexSlice Core 5G](#Integration ORANSlice + NexSlice Core 5G)
+2. [État de l'Art : RAN Slicing](#État de l'Art : RAN Slicing)
+3. [ Notice de Déploiement et Test ORANSlice + NexSlice](#Notice de Déploiement et Test ORANSlice + NexSlice)
 
 
-# Integration ORANSlice + NexSlice Core 5G
+#Integration ORANSlice + NexSlice Core 5G
 
 ## Resume
 
@@ -397,7 +397,7 @@ Cette integration prouve la faisabilite architecturale du slicing E2E avec NexSl
 ---
 
 
-# État de l'Art : RAN Slicing
+#État de l'Art : RAN Slicing
 
 **Mesmin Aude, Martin Claire et Preti-Levy Ruben**  
 _Fisa 2A_  
@@ -663,7 +663,7 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 | Documentation | Scripts de validation et guide de reproduction | README et scripts fonctionnels |
 
 ---
-# Notice de Déploiement et Test ORANSlice + NexSlice
+#Notice de Déploiement et Test ORANSlice + NexSlice
 
 ## Prérequis
 
