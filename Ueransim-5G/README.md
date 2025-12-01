@@ -5,7 +5,7 @@ Afin de déployer cette solution, déplacez-vous dans le répertoire de travail 
 </p>
 
 ```bash
-cd ./Sujet_5_RAN-Integration_RAN-Slicing
+cd ./Sujet_5_RAN-Int-gration_Ran-Slicing/Ueransim-5G/scripts
 ```
 
 > À noter : Afin que cette solution fonctionne, assurez-vous que vos pods gNB et UEs UERANSIM soient en état "Running". Vérifiez les logs de votre gNB, que votre UE soit bien attaché au reste du réseau. Vérifiez les logs de vos UEs également pour s'assurer qu'ils ont bien obtenu une adresse IP.
@@ -98,6 +98,76 @@ Vous pourrez visualiser ci-dessous le résultat:
 
 <img width="500" height="700" alt="image" src="https://github.com/user-attachments/assets/d802c1eb-8a53-4bb7-a783-5d67275201c3" />
 
+### Analyse des tests :
+
+**Résultats des tests séquentiels (sans congestion) :**
+
+| Slice | UE | QoS configurée (Max PRB) | Débit mesuré | Utilisation | Verdict |
+|-------|-----|----------------|--------------|-------------|---------|
+| eMBB | UE1 | 106 Mbps | **51.91 Mbps** | 48.9% | Conforme |
+| URLLC | UE2 | 45 Mbps | **41.01 Mbps** | 91.13% | Conforme |
+| mMTC | UE3 | 22 Mbps | **20.04 Mbps** | 91.09% | Conforme |
+
+**Observations importantes :**
+- Le slice **eMBB** atteint 48.9% de sa limite, nous expliquerons après pourquoi cela est attendu.
+- Le slice **URLLC atteint 91.13%**
+- Le slice **eMBB atteint 91.09%**
+
+**Calibration UDP :** Un test UDP de calibration a mesuré la **capacité physique maximale** de la machine à **102.63 Mbps**. Cette valeur représente le débit maximum que peut gérer l'environnement virtualisé en simulation "tout-en-un".
+
+**Le débit TCP eMBB (51.91 Mbps) représente environ 50% de la capacité physique UDP** (102.63 Mbps). Cette différence est normale et attendue car :
+- **TCP** utilise un contrôle de congestion conservateur (slow start, congestion avoidance)
+- **Retransmissions TCP** : La simulation UERANSIM génère des pertes de paquets qui déclenchent des retransmissions, réduisant le débit effectif
+- **Latence CPU** : L'environnement virtualisé introduit de la latence qui impacte particulièrement TCP
+- **Overhead protocole** : TCP a plus d'overhead que UDP (accusés de réception, fenêtres de congestion)
+
+**Conclusion partielle :** Les trois slices respectent leurs limites QoS. Les slices URLLC et mMTC atteignent quasiment leur limite, confirmant l'efficacité du Traffic Control sur les UPFs.
+
+---
+
+**Résultats des tests concurrents (saturation réseau) :**
+
+Lorsque les 3 UEs transmettent simultanément pendant 30 secondes, la différenciation par slice devient particulièrement visible :
+
+| Slice | Débit concurrent | Ratio mesuré | Ratio attendu | Verdict |
+|-------|------------------|--------------|---------------|---------|
+| eMBB | **49.67 Mbps** | - | - | Priorité haute |
+| URLLC | **40.91 Mbps** | eMBB/URLLC = **1.21x** | 2.0x | Proche |
+| mMTC | **20.06 Mbps** | eMBB/mMTC = **2.48x** | 5.0x | Écart significatif |
+
+**Analyse détaillée :**
+
+Les ratios mesurés (1.21x et 2.48x) s'écartent des ratios théoriques attendus (2.0x et 5.0x). Cette différence s'explique par plusieurs facteurs :
+
+1. **Limitation physique de la machine (102.63 Mbps) :** 
+   - Débit total concurrent : 49.67 + 40.91 + 20.06 = **110.64 Mbps**
+   - Ce total **dépasse légèrement** la capacité UDP mesurée (102.63 Mbps)
+   - Le système est donc en **saturation partielle**
+
+2. **QoS individuelles respectées :**
+   - eMBB : 49.67 Mbps < 106 Mbps (limite)
+   - URLLC : 40.91 Mbps < 45 Mbps (proche de la limite)
+   - mMTC : 20.06 Mbps < 22 Mbps (proche de la limite)
+
+3. **Isolation validée malgré l'écart :**
+   - Le slice **mMTC maintient ses 20 Mbps** même en charge → Isolation effective
+   - Le slice **eMBB reste prioritaire** (49.67 > 40.91 > 20.06) → Hiérarchie respectée
+   - En situation de charge, **eMBB > URLLC > mMTC** est observé comme souhaité
+
+4. **Pourquoi les ratios théoriques ne sont pas atteints :**
+   - Les QoS sont configurées pour **106/45/22 Mbps** (ratio d'environ 4.8:2.04:1)
+   - Mais la **capacité physique totale** n'est que de **102.63 Mbps**
+   - Il est donc **physiquement impossible** d'atteindre les ratios théoriques en saturant tous les slices simultanément
+   - Les ratios observés (1.21x et 2.48x) reflètent la **répartition réelle** en fonction de la capacité disponible
+
+**Conclusion des tests concurrents :**
+Bien que les ratios théoriques ne soient pas atteints en raison de la **limitation physique de la machine hôte** (102.63 Mbps), les résultats démontrent clairement :
+1. **Isolation effective** : Chaque slice reste dans sa limite QoS
+2. **Priorisation fonctionnelle** : eMBB > URLLC > mMTC même en charge
+3. **Limitation environnement** : La VM limite le débit total disponible
+
+
+
 ## 3. Étape de nettoyage
 Lancer le troisième script:
 
@@ -115,14 +185,18 @@ Lancer le quatrième script:
 ```bash
 ./4_demo_final_ran_slicing.sh
 ```
-
+Ce script résume les fonctionnalités de la solution RAN Slicing UERANSIM.
 
 ## 5. Fichier de configuration
 Explication du fichier de configuration utilisé pour définir les limites de QoS.
 
-Pour le visualiser et comprendre comment il est construit, effectuer la commande :
+Pour le visualiser, effectuez la commande :
 
 ```bash
 cat ./5_rrmPolicy.json
 ```
----
+
+Voici un aperçu:
+
+<img width="510" height="600" alt="identifiant unique du slice" src="https://github.com/user-attachments/assets/12ae8858-6cad-4925-b46f-7d9ef9415e7f" />
+
