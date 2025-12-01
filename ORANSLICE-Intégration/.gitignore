@@ -6,3 +6,7 @@ figures/
 5g_core/
 5g_ran/
 fig/
+monitoring/
+metricserver.yaml
+ran-slicing/
+

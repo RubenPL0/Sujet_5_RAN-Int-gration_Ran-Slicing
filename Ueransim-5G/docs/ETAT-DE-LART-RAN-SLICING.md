@@ -6,11 +6,11 @@ Dans le cadre du cours « Infrastructure intelligente logicielle des Réseaux mo
 </p>
 
 <p align="justify">
-Concrètement, la partie réseaux d'accès radio (ou RAN) et ses ressources ne sont pas réparties en fonction des besoins des slices, et est statique. Dans la réalité, le slicing RAN est coordonné au slicing core pour offrir une qualité de service et de performance de bout en bout de façon dynamique.
+Actuellement, le RAN alloue ses ressources de manière statique, indépendamment des slices. En pratique, le slicing RAN et le slicing Core doivent être coordonnés pour assurer une QoS de bout en bout dynamique.
 </p>
 
 <p align="justify">
-L'objectif est donc de pouvoir associer un équipement utilisateur (UE) à une slice et de pouvoir allouer des ressources radios selon la slice, en s'inspirant notamment de l'approche O-RAN pour le contrôle de cette répartition.
+L'objectif est d'associer un équipement utilisateur (UE) à une slice et d'allouer des ressources radios selon la slice, en s'inspirant notamment de l'approche O-RAN pour le contrôle de cette répartition.
 </p>
 
 ---
@@ -194,7 +194,7 @@ L'objectif est de maximiser le débit. Les techniques incluent l'ordonnancement 
 #### 3.2.3 Mécanismes de garantie pour l'URLLC (*Ultra-Reliable and Low-Latency Communication*)
 
 <p align="justify">
-Les objectifs sont une latence de l'ordre de la milliseconde et une fiabilité supérieure à 99,999 %, par exemple on utilise ce type de service pour des opérations dont on a le droit à <strong>aucune</strong> erreur: retransmission en direct, chirurgie à distance etc. <br/>
+Les objectifs sont une latence de l'ordre de la milliseconde et une fiabilité supérieure à 99,999 %, par exemple on utilise ce type de service pour des opérations où on n'a pas le droit à l'erreur: retransmission en direct, chirurgie à distance etc. <br/>
 <br/>
 Les techniques fondamentales incluent notamment :
 </p>
@@ -339,7 +339,7 @@ Ce projet de R&D se positionne précisément dans les interstices laissés par l
 
 3. **Créer un environnement expérimental reproductible** combinant simulation (UERANSIM, RFSim) et émulation pour valider les approches proposées.
 
-4. **Contribuer à la communauté open source** en documentant les interfaces et protocoles nécessaires à l'interopérabilité RAN-Cœur dans un contexte de slicing dynamique.
+4. **Contribuer à la communauté open source** en documentant les interfaces et protocoles nécessaires à l'interopérabilité RAN-Coeur dans un contexte de slicing dynamique.
 
 Ce projet répond ainsi à un besoin concret : dépasser le slicing statique du RAN pour offrir une gestion coordonnée et dynamique des ressources, alignée avec les promesses de la 5G en matière de qualité de service différenciée.
 
@@ -370,20 +370,11 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 
 ---
 
----
+# Références 
 
-# Références
-
-### Projets Open Source
-- [ORANSlice (WiNeS Lab)](https://github.com/wineslab/ORANSlice) — Projet gNB RAN Slicing
-- [ORANSlice — OpenRanGym](https://openrangym.com/ran-frameworks/oranslice)
-- [OpenAirInterface 5G RAN](https://gitlab.eurecom.fr/oai/openairinterface5g) — Stack RAN 5G open source
-- [OpenAirInterface 5G Core](https://gitlab.eurecom.fr/oai/cn5g) — Cœur 5G open source
-- [NexSlice (AIDY-F2N)](https://github.com/AIDY-F2N/NexSlice/tree/k3s) — Déploiement NexSlice
 
 ### Architecture et Standards 3GPP
 - [3GPP TS 23.501 — System Architecture](https://www.3gpp.org/ftp/Specs/archive/23_series/23.501/)
-- [3GPP TS 38.300 — NR Overall Description](https://www.3gpp.org/DynaReport/38300.htm)
 - [ETSI - 3GPP TS 123 501 (v17.05.00)](https://www.etsi.org/deliver/etsi_ts/123500_123599/123501/17.05.00_60/ts_123501v170500p.pdf)
 
 ### Network Slicing
@@ -399,6 +390,7 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 - O-RAN Alliance — WG1 Slicing Architecture R003 v13.00
 
 ### ORANSlice et RAN Slicing
+- [ORANSlice — OpenRanGym](https://openrangym.com/ran-frameworks/oranslice)
 - [Cheng et al. — ORANSlice (2024)](https://ece.northeastern.edu/wineslab/papers/Cheng2024ORANSlice.pdf)
 - [RadioSaber — Chen Yongzhou (NSDI'23)](https://www.usenix.org/system/files/nsdi23-chen-yongzhou.pdf)
 
@@ -406,5 +398,6 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 - [IEEE — Coexistence of eMBB and URLLC in 5G NR](https://ieeexplore.ieee.org/abstract/document/9040905)
 - [MDPI — Two-Tier Slicing Resource Allocation with DRL](https://www.mdpi.com/1424-8220/22/9/3495)
 - [Tech Edge Wireless — 5G NR RACH Procedure](https://www.techedgewireless.com/post/5g-nr-rach-procedure-in-detail)
----
 
+### Projets Open Source
+- [NexSlice (AIDY-F2N) — Branche K3s](https://github.com/AIDY-F2N/NexSlice/tree/k3s)

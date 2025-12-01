@@ -37,7 +37,7 @@ oai-nssf-xxx         1/1     Running
 ## 2. Déploiement ORANSlice gNB
 
 ```bash
-# Déploiement autotmatisé
+# Déploiement automatisé
 ./deploy.sh
 ```
 

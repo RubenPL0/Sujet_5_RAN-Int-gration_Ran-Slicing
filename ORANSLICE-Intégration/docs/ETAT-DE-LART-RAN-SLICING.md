@@ -6,11 +6,11 @@ Dans le cadre du cours « Infrastructure intelligente logicielle des Réseaux mo
 </p>
 
 <p align="justify">
-Concrètement, la partie réseaux d'accès radio (ou RAN) et ses ressources ne sont pas réparties en fonction des besoins des slices, et est statique. Dans la réalité, le slicing RAN est coordonné au slicing core pour offrir une qualité de service et de performance de bout en bout de façon dynamique.
+Actuellement, le RAN alloue ses ressources de manière statique, indépendamment des slices. En pratique, le slicing RAN et le slicing Core doivent être coordonnés pour assurer une QoS de bout en bout dynamique.
 </p>
 
 <p align="justify">
-L'objectif est donc de pouvoir associer un équipement utilisateur (UE) à une slice et de pouvoir allouer des ressources radios selon la slice, en s'inspirant notamment de l'approche O-RAN pour le contrôle de cette répartition.
+L'objectif est d'associer un équipement utilisateur (UE) à une slice et d'allouer des ressources radios selon la slice, en s'inspirant notamment de l'approche O-RAN pour le contrôle de cette répartition.
 </p>
 
 ---
@@ -194,7 +194,7 @@ L'objectif est de maximiser le débit. Les techniques incluent l'ordonnancement 
 #### 3.2.3 Mécanismes de garantie pour l'URLLC (*Ultra-Reliable and Low-Latency Communication*)
 
 <p align="justify">
-Les objectifs sont une latence de l'ordre de la milliseconde et une fiabilité supérieure à 99,999 %, par exemple on utilise ce type de service pour des opérations dont on a le droit à <strong>aucune</strong> erreur: retransmission en direct, chirurgie à distance etc. <br/>
+Les objectifs sont une latence de l'ordre de la milliseconde et une fiabilité supérieure à 99,999 %, par exemple on utilise ce type de service pour des opérations où on n'a pas le droit à l'erreur: retransmission en direct, chirurgie à distance etc. <br/>
 <br/>
 Les techniques fondamentales incluent notamment :
 </p>
@@ -339,7 +339,7 @@ Ce projet de R&D se positionne précisément dans les interstices laissés par l
 
 3. **Créer un environnement expérimental reproductible** combinant simulation (UERANSIM, RFSim) et émulation pour valider les approches proposées.
 
-4. **Contribuer à la communauté open source** en documentant les interfaces et protocoles nécessaires à l'interopérabilité RAN-Cœur dans un contexte de slicing dynamique.
+4. **Contribuer à la communauté open source** en documentant les interfaces et protocoles nécessaires à l'interopérabilité RAN-Coeur dans un contexte de slicing dynamique.
 
 Ce projet répond ainsi à un besoin concret : dépasser le slicing statique du RAN pour offrir une gestion coordonnée et dynamique des ressources, alignée avec les promesses de la 5G en matière de qualité de service différenciée.
 
@@ -369,6 +369,8 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 | Documentation | Scripts de validation et guide de reproduction | README et scripts fonctionnels |
 
 ---
+
+# Références 
 
 
 ### Architecture et Standards 3GPP
