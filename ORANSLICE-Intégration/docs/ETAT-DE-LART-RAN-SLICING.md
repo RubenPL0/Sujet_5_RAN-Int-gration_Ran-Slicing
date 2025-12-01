@@ -369,3 +369,33 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 | Documentation | Scripts de validation et guide de reproduction | README et scripts fonctionnels |
 
 ---
+
+
+### Architecture et Standards 3GPP
+- [3GPP TS 23.501 — System Architecture](https://www.3gpp.org/ftp/Specs/archive/23_series/23.501/)
+- [ETSI - 3GPP TS 123 501 (v17.05.00)](https://www.etsi.org/deliver/etsi_ts/123500_123599/123501/17.05.00_60/ts_123501v170500p.pdf)
+
+### Network Slicing
+- [IEEE — Network Slicing Survey](https://ieeexplore.ieee.org/document/7926923)
+- [IEEE — Hard and Soft Slicing with DRL](https://ieeexplore.ieee.org/document/9860789)
+- [Arxiv — Network Slicing](https://arxiv.org/pdf/2108.02346)
+- [Network Slicing in 5G (ResearchGate)](https://www.researchgate.net/figure/Network-Slicing-in-5G_fig2_385321905)
+- [CISA — 5G Network Slicing Security Considerations](https://www.cisa.gov/sites/default/files/2024-08/ESF_5G_NETWORK_SLICING-SECURITY_CONSIDERATIONS_FOR_DESIGN%2CDEPLOYMENT%2CAND_MAINTENANCE_FINAL_508.pdf)
+
+### O-RAN
+- [O-RAN Alliance](https://www.o-ran.org/)
+- [MathWorks — O-RAN Overview](https://es.mathworks.com/discovery/o-ran.html)
+- O-RAN Alliance — WG1 Slicing Architecture R003 v13.00
+
+### ORANSlice et RAN Slicing
+- [ORANSlice — OpenRanGym](https://openrangym.com/ran-frameworks/oranslice)
+- [Cheng et al. — ORANSlice (2024)](https://ece.northeastern.edu/wineslab/papers/Cheng2024ORANSlice.pdf)
+- [RadioSaber — Chen Yongzhou (NSDI'23)](https://www.usenix.org/system/files/nsdi23-chen-yongzhou.pdf)
+
+### Coexistence eMBB / URLLC / mMTC
+- [IEEE — Coexistence of eMBB and URLLC in 5G NR](https://ieeexplore.ieee.org/abstract/document/9040905)
+- [MDPI — Two-Tier Slicing Resource Allocation with DRL](https://www.mdpi.com/1424-8220/22/9/3495)
+- [Tech Edge Wireless — 5G NR RACH Procedure](https://www.techedgewireless.com/post/5g-nr-rach-procedure-in-detail)
+
+### Projets Open Source
+- [NexSlice (AIDY-F2N) — Branche K3s](https://github.com/AIDY-F2N/NexSlice/tree/k3s)

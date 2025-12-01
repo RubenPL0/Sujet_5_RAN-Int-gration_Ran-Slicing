@@ -278,12 +278,3 @@ kubectl delete -f k3s/configmap-rrmpolicy.yaml -n nexslice
 ```
 
 ---
-
-## Références
-
-- [ORANSlice (WiNeS Lab)](https://github.com/wineslab/ORANSlice) — Projet gNB RAN Slicing
-- [OpenAirInterface 5G RAN](https://gitlab.eurecom.fr/oai/openairinterface5g) — Stack RAN 5G open source
-- [OpenAirInterface 5G Core](https://gitlab.eurecom.fr/oai/cn5g) — Cœur 5G open source
-- [NexSlice (AIDY-F2N)](https://github.com/AIDY-F2N/NexSlice/tree/k3s) — Déploiement NexSlice
-- [3GPP TS 23.501 — System Architecture](https://www.3gpp.org/DynaReport/23501.htm) — Référence architecture système 5G
-- [3GPP TS 38.300 — NR Overall Description](https://www.3gpp.org/DynaReport/38300.htm) — Description générale NR 5G

@@ -3,12 +3,65 @@
 
 # Sommaire du Projet
 
-1. [État de l’Art : RAN Slicing](#état-de-lart--ran-slicing)
-2. [Structure du projet](#)
-
-
 
 > Avant d'implémenter une de nos solutions, veuillez vous assurer d'avoir implémenté le coeur de réseau 5G [Nexslice](https://github.com/AIDY-F2N/NexSlice/tree/k3s) sous k3s.
+
+# Prise en main
+
+## Obtenir le projet:
+
+```bash
+git clone https://github.com/RubenPL0/Sujet_5_RAN-Int-gration_Ran-Slicing.git
+
+```
+
+**Attention**, Vous devez être placé dans le dossier Nexslice.
+Merci de Suivre les readme dans chaque dossier pour le deploiement de la solution.
+
+
+## Structure du projet
+
+```bash 
+.
+├── ORANSLICE-Intégration
+│   ├── README.md
+│   ├── docs
+│   ├── k3s-deploy-oranslice/
+│   ├── scripts/
+│   └── tests/
+└── Ueransim-5G
+    ├── README.md
+    ├── docs/
+    ├── k3s-deploy-ueransim/
+    └── scripts/
+```
+
+Les fichiers README décrivent comment déployer les deux solutions pour NexSlice.
+
+Les dossiers `docs/` regroupent les documents qui constituent le README.
+
+Les dossiers `k3s-deploy-*` contiennent les fichiers de configuration de ORANSlice et UERANSIM.
+
+Les dossiers `scripts/` contiennent les scripts de tests et d'installation.
+
+
+## Observation 
+
+## Comparaison Baseline vs Solution
+
+| Aspect | NexSlice seul | NexSlice + ORANSlice |
+|--------|---------------|----------------------|
+| Slicing Core | ok | ok |
+| Slicing RAN | non (statique) | ok (dynamique) |
+| Allocation PRBs par slice | non | ok |
+| Association UE-Slice au MAC | non | ok |
+
+Pour voir les scripts en action, merci de regarder la vidéo Résultat.mp4 dansle dossier.
+
+## Limitations
+
+
+---
 
 # État de l'Art : RAN Slicing
 
@@ -351,7 +404,7 @@ Ce projet de R&D se positionne précisément dans les interstices laissés par l
 
 3. **Créer un environnement expérimental reproductible** combinant simulation (UERANSIM, RFSim) et émulation pour valider les approches proposées.
 
-4. **Contribuer à la communauté open source** en documentant les interfaces et protocoles nécessaires à l'interopérabilité RAN-Cœur dans un contexte de slicing dynamique.
+4. **Contribuer à la communauté open source** en documentant les interfaces et protocoles nécessaires à l'interopérabilité RAN-Coeur dans un contexte de slicing dynamique.
 
 Ce projet répond ainsi à un besoin concret : dépasser le slicing statique du RAN pour offrir une gestion coordonnée et dynamique des ressources, alignée avec les promesses de la 5G en matière de qualité de service différenciée.
 
@@ -382,42 +435,34 @@ Cette approche permet de valider le control plane du slicing E2E (enregistrement
 
 ---
 
-# Projet 
-
-## Obtenir le projet:
-
-```bash
-git clone https://github.com/RubenPL0/Sujet_5_RAN-Int-gration_Ran-Slicing.git
-
-```
-
-**Attention**, Vous devez être placé dans le dossier Nexslice. 
+# Références 
 
 
-## Structure du projet
+### Architecture et Standards 3GPP
+- [3GPP TS 23.501 — System Architecture](https://www.3gpp.org/ftp/Specs/archive/23_series/23.501/)
+- [ETSI - 3GPP TS 123 501 (v17.05.00)](https://www.etsi.org/deliver/etsi_ts/123500_123599/123501/17.05.00_60/ts_123501v170500p.pdf)
 
-```bash 
-.
-├── ORANSLICE-Intégration
-│   ├── README.md
-│   ├── docs
-│   ├── k3s-deploy-oranslice/
-│   ├── scripts/
-│   └── tests/
-└── Ueransim-5G
-    ├── README.md
-    ├── docs/
-    ├── k3s-deploy-ueransim/
-    └── scripts/
-```
+### Network Slicing
+- [IEEE — Network Slicing Survey](https://ieeexplore.ieee.org/document/7926923)
+- [IEEE — Hard and Soft Slicing with DRL](https://ieeexplore.ieee.org/document/9860789)
+- [Arxiv — Network Slicing](https://arxiv.org/pdf/2108.02346)
+- [Network Slicing in 5G (ResearchGate)](https://www.researchgate.net/figure/Network-Slicing-in-5G_fig2_385321905)
+- [CISA — 5G Network Slicing Security Considerations](https://www.cisa.gov/sites/default/files/2024-08/ESF_5G_NETWORK_SLICING-SECURITY_CONSIDERATIONS_FOR_DESIGN%2CDEPLOYMENT%2CAND_MAINTENANCE_FINAL_508.pdf)
 
-Les fichiers README décrivent comment déployer les deux solutions pour NexSlice.
+### O-RAN
+- [O-RAN Alliance](https://www.o-ran.org/)
+- [MathWorks — O-RAN Overview](https://es.mathworks.com/discovery/o-ran.html)
+- O-RAN Alliance — WG1 Slicing Architecture R003 v13.00
 
-Les dossiers `docs/` regroupent les documents qui constituent le README.
+### ORANSlice et RAN Slicing
+- [ORANSlice — OpenRanGym](https://openrangym.com/ran-frameworks/oranslice)
+- [Cheng et al. — ORANSlice (2024)](https://ece.northeastern.edu/wineslab/papers/Cheng2024ORANSlice.pdf)
+- [RadioSaber — Chen Yongzhou (NSDI'23)](https://www.usenix.org/system/files/nsdi23-chen-yongzhou.pdf)
 
-Les dossiers `k3s-deploy-*` contiennent les fichiers de configuration de ORANSlice et UERANSIM.
+### Coexistence eMBB / URLLC / mMTC
+- [IEEE — Coexistence of eMBB and URLLC in 5G NR](https://ieeexplore.ieee.org/abstract/document/9040905)
+- [MDPI — Two-Tier Slicing Resource Allocation with DRL](https://www.mdpi.com/1424-8220/22/9/3495)
+- [Tech Edge Wireless — 5G NR RACH Procedure](https://www.techedgewireless.com/post/5g-nr-rach-procedure-in-detail)
 
-Les dossiers `scripts/` contiennent les scripts de tests et d'installation.
-
-
-
+### Projets Open Source
+- [NexSlice (AIDY-F2N) — Branche K3s](https://github.com/AIDY-F2N/NexSlice/tree/k3s)

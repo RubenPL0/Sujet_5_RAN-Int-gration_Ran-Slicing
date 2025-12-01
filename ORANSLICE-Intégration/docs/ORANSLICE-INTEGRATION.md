@@ -375,11 +375,3 @@ Data Plane non fonctionnel :
 Cette integration prouve la faisabilite architecturale du slicing E2E avec NexSlice, meme si le data plane necessite une correction dans l'implementation ORANSlice.
 
 ---
-
-## References
-
-- OAI 5G RAN : https://gitlab.eurecom.fr/oai/openairinterface5g
-- OAI 5G Core : https://gitlab.eurecom.fr/oai/cn5g
-- ORANSlice : https://github.com/AIDY-F2N/ORANSlice
-- 3GPP TS 23.501 - System Architecture : https://www.3gpp.org/DynaReport/23501.htm
-- 3GPP TS 38.300 - NR Overall Description : https://www.3gpp.org/DynaReport/38300.htm
