@@ -269,7 +269,7 @@ spec:
 
 ## Script de Validation
 ```bash
-~/NexSlice/scripts/validate-oranslice.sh
+~./scripts/validate-oranslice.sh
 ```
 
 Affiche :
@@ -361,7 +361,7 @@ Le data plane ne fonctionne pas avec l'image ORANSlice en mode RFsimulator. C'es
 
 ## Conclusion
 
-L'integration ORANSlice + NexSlice demontre avec succes :
+L'integration ORANSlice + NexSlice :
 
 Control Plane complet :
 - Connexion N2 (NGAP) entre gNB et AMF
