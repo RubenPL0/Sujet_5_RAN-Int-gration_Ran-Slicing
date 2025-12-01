@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rrmpolicy-config
+  namespace: nexslice
+data:
+  rrmPolicy.json: |
+    {
+      "slices": [
+        {
+          "sst": 1,
+          "sd": 16777215,
+          "dedicated_ratio": 10,
+          "min_ratio": 40,
+          "max_ratio": 80,
+          "label": "eMBB"
+        },
+        {
+          "sst": 2,
+          "sd": 16777215,
+          "dedicated_ratio": 20,
+          "min_ratio": 20,
+          "max_ratio": 40,
+          "label": "URLLC"
+        },
+        {
+          "sst": 3,
+          "sd": 16777215,
+          "dedicated_ratio": 5,
+          "min_ratio": 5,
+          "max_ratio": 30,
+          "label": "mMTC"
+        }
+      ]
+    }

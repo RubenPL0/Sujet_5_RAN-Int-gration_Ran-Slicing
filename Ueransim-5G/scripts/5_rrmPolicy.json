@@ -1,0 +1,31 @@
+{
+  "slices": [
+    {
+      "sliceId": "01-000001",
+      "label": "eMBB",
+      "minPRB": 42,
+      "maxPRB": 106,
+      "weight": 4,
+      "description": "Enhanced Mobile Broadband - Haut débit (40% min, 100% max)"
+    },
+    {
+      "sliceId": "01-000002",
+      "label": "URLLC",
+      "minPRB": 32,
+      "maxPRB": 45,
+      "weight": 3,
+      "description": "Ultra-Reliable Low-Latency Communication (30% min, 80% max)"
+    },
+    {
+      "sliceId": "01-000003",
+      "label": "mMTC",
+      "minPRB": 11,
+      "maxPRB": 22,
+      "weight": 1,
+      "description": "Massive Machine-Type Communication (10% min, 50% max)"
+    }
+  ],
+  "totalPRB": 106,
+  "bandwidth": "20MHz",
+  "frequency": "3.5GHz"
+}

@@ -1,0 +1,100 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ue-oranslice-mmtc-config
+  namespace: nexslice
+data:
+  ue.yaml: |
+    supi: 'imsi-208950000000102'
+    mcc: '208'
+    mnc: '95'
+    key: '0C0A34601D4F07677303652C0462535B'
+    op: '63bfa50ee6523365ff14c1f45f88737d'
+    opType: 'OPC'
+    amf: '8000'
+    imei: '356938035643802'
+    imeiSv: '4370816125816153'
+    
+    gnbSearchList:
+      - oranslice-gnb
+    
+    uacAic:
+      mps: false
+      mcs: false
+    
+    uacAcc:
+      normalClass: 0
+      class11: false
+      class12: false
+      class13: false
+      class14: false
+      class15: false
+    
+    sessions:
+      - type: IPv4
+        apn: oai3
+        emergency: false
+        slice:
+          sst: 3
+    
+    configured-nssai:
+      - sst: 3
+    
+    default-nssai:
+      - sst: 3
+    
+    integrity:
+      IA1: true
+      IA2: true
+      IA3: true
+    
+    ciphering:
+      EA1: true
+      EA2: true
+      EA3: true
+    
+    integrityMaxRate:
+      uplink: 'full'
+      downlink: 'full'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ue-oranslice-mmtc
+  namespace: nexslice
+  labels:
+    app: ue-oranslice-mmtc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ue-oranslice-mmtc
+  template:
+    metadata:
+      labels:
+        app: ue-oranslice-mmtc
+    spec:
+      containers:
+      - name: ues
+        image: docker.io/gradiant/ueransim:3.2.6
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: GNB_IP
+          value: oranslice-gnb
+        args:
+          - ue
+          - -n
+          - "1"
+        volumeMounts:
+          - name: config
+            mountPath: /etc/ueransim/ue.yaml
+            subPath: ue.yaml
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["NET_ADMIN"]
+      volumes:
+        - name: config
+          configMap:
+            name: ue-oranslice-mmtc-config
